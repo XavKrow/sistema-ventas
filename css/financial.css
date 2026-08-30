@@ -1,0 +1,131 @@
+/* ============================================
+   PANEL FINANCIERO Y RETIROS
+   ============================================ */
+
+/* ===== PANEL FINANCIERO ===== */
+.financial-panel {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 13px;
+    background: var(--bg-secondary);
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.financial-panel .item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.financial-panel .label {
+    color: var(--text-muted);
+}
+
+.financial-panel .value-sales {
+    color: #48bb78;
+    font-weight: bold;
+}
+
+.financial-panel .value-withdrawals {
+    color: #f56565;
+    font-weight: bold;
+}
+
+.financial-panel .value-cash {
+    color: #667eea;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.financial-panel .divider {
+    border-left: 2px solid var(--border-color);
+    padding-left: 10px;
+    height: 25px;
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes pulse-update {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.financial-panel .value-sales,
+.financial-panel .value-withdrawals,
+.financial-panel .value-cash {
+    transition: all 0.3s ease;
+}
+
+.financial-panel .value-sales.updated,
+.financial-panel .value-withdrawals.updated,
+.financial-panel .value-cash.updated {
+    animation: pulse-update 0.3s ease;
+}
+
+/* ===== RETIROS ===== */
+#withdrawModal .modal-content {
+    max-width: 400px;
+}
+
+#withdrawAmount {
+    font-size: 24px;
+    padding: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#withdrawAmount:focus {
+    border-color: #ed8936;
+    box-shadow: 0 0 0 3px rgba(237, 137, 54, 0.2);
+}
+
+#withdrawMessage {
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 24px;
+}
+
+#withdrawalsList .table-responsive {
+    overflow-x: auto;
+}
+
+#withdrawalsList table {
+    min-width: 500px;
+}
+
+#withdrawalsList .btn-sm {
+    padding: 4px 10px;
+    font-size: 11px;
+}
+
+.withdrawal-negative {
+    color: #f56565;
+}
+
+/* ===== TARJETAS ===== */
+.card-danger {
+    border-color: #f56565;
+}
+.card-danger .card-icon {
+    color: #f56565;
+}
+
+.card-primary {
+    border-color: #667eea;
+}
+.card-primary .card-icon {
+    color: #667eea;
+}
+
+.card-success {
+    border-color: #48bb78;
+}
+.card-success .card-icon {
+    color: #48bb78;
+}

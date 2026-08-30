@@ -1,0 +1,78 @@
+/* ============================================
+   ESTADÍSTICAS Y GRÁFICAS
+   ============================================ */
+
+.card-stats {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.card-stats:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+.card-stats h3 {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.card-stats .number-stats {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.chart-container {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    min-height: 100px;
+    position: relative;
+}
+
+.chart-container h3 {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+}
+
+.chart-container canvas {
+    max-height: 250px;
+    max-width: 100%;
+}
+
+/* Estado vacío dentro del chart-container */
+.chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    min-height: 200px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.chart-empty .icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.chart-empty .title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.chart-empty .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+}

@@ -1,0 +1,81 @@
+/* ============================================
+   MODALES Y NOTIFICACIONES
+   ============================================ */
+
+/* ===== MODAL ===== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--bg-modal);
+    max-width: 600px;
+    width: 90%;
+    padding: 30px;
+    border-radius: 12px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalFade 0.3s ease;
+    box-shadow: 0 10px 30px var(--shadow-modal);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+@keyframes modalFade {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: var(--text-primary);
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+/* ===== NOTIFICACIONES ===== */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    z-index: 1001;
+    animation: slideIn 0.3s ease;
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}

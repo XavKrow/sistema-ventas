@@ -1,0 +1,91 @@
+/* ============================================
+   MODO OSCURO
+   ============================================ */
+
+[data-theme="dark"] {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #1a1a2e;
+    --bg-header: #0f3460;
+    --bg-table-header: #1a1a2e;
+    --bg-input: #2a2a4a;
+    --bg-modal: #1a1a2e;
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --text-muted: #888899;
+    --text-white: #ffffff;
+    --border-color: #2a2a4a;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --shadow-modal: rgba(0, 0, 0, 0.6);
+    --hover-bg: #2a2a4a;
+    --badge-bg: #2a2a4a;
+    --input-bg: #2a2a4a;
+    --readonly-bg: #1a1a2e;
+}
+
+/* ===== COMPONENTES EN MODO OSCURO ===== */
+
+[data-theme="dark"] .financial-panel {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .financial-panel .label {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .financial-panel .value-sales {
+    color: #68d391;
+}
+
+[data-theme="dark"] .financial-panel .value-withdrawals {
+    color: #fc8181;
+}
+
+[data-theme="dark"] .financial-panel .value-cash {
+    color: #9f7aea;
+}
+
+[data-theme="dark"] .btn-warning {
+    background: #c05621;
+}
+[data-theme="dark"] .btn-warning:hover {
+    background: #9c4221;
+}
+
+[data-theme="dark"] .withdrawal-negative {
+    color: #fc8181;
+}
+
+[data-theme="dark"] .filter-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] .filter-select option {
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .card-stats {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .chart-container {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .login-container {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+}
+
+[data-theme="dark"] .welcome-card {
+    background: var(--bg-card);
+}
+
+[data-theme="dark"] .welcome-card h1 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .welcome-card p {
+    color: var(--text-secondary);
+}

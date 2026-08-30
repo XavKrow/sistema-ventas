@@ -1,0 +1,40 @@
+/* ============================================
+   SISTEMA DE VENTAS - CSS PRINCIPAL
+   ============================================ */
+
+/* 1. Variables y reset */
+@import url('base.css');
+
+/* 2. Layout (header, dashboard, tabs) */
+@import url('layout.css');
+
+/* 3. Componentes comunes (botones, badges, formularios) */
+@import url('components.css');
+
+/* 4. Páginas (login, welcome) */
+@import url('pages.css');
+
+/* 5. Tablas y tarjetas */
+@import url('tables.css');
+
+/* 6. Modales y notificaciones */
+@import url('modals.css');
+
+/* 7. Panel financiero y retiros */
+@import url('financial.css');
+
+/* 8. Búsqueda y filtros */
+@import url('search.css');
+
+/* 9. Indicadores de stock */
+@import url('stock.css');
+
+/* 10. Estadísticas y gráficas */
+@import url('stats.css');
+
+/* 11. Modo oscuro */
+@import url('dark-mode.css');
+
+/* 12. Responsive */
+@import url('responsive.css');
+

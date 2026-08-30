@@ -1,0 +1,158 @@
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        align-items: stretch;
+    }
+    
+    .financial-panel {
+        justify-content: center;
+        padding: 8px 12px;
+    }
+    
+    .financial-panel .divider {
+        display: none;
+    }
+    
+    .btn-warning {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .nav-tabs {
+        overflow-x: auto;
+        padding: 0 15px;
+    }
+    
+    .tab-btn {
+        padding: 10px 15px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+    
+    .tab-content {
+        padding: 15px;
+    }
+    
+    .sales-form {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .sales-form .form-group {
+        margin-bottom: 10px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .section-header .btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .modal-content {
+        margin: 20px;
+        padding: 20px;
+    }
+    
+    table {
+        font-size: 13px;
+    }
+    
+    th, td {
+        padding: 8px 10px;
+    }
+    
+    .summary-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .search-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container .search-input {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .search-container .filter-select {
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .search-container .search-results {
+        text-align: center;
+        margin-left: 0;
+    }
+    
+    #stats .card-stats {
+        grid-column: 1 / -1;
+    }
+    
+    #stats .chart-container {
+        grid-column: 1 / -1;
+    }
+    
+    .financial-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .login-form {
+        padding: 25px;
+        margin: 15px;
+    }
+    
+    .financial-panel {
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        font-size: 12px;
+    }
+    
+    .financial-panel .divider {
+        display: none;
+    }
+    
+    .user-info {
+        gap: 8px;
+    }
+    
+    .chart-empty .icon {
+        font-size: 32px;
+    }
+    
+    .chart-empty {
+        padding: 20px;
+        min-height: 150px;
+    }
+    
+    .welcome-card {
+        padding: 30px 20px;
+        margin: 15px;
+    }
+}

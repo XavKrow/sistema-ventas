@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Sistema de Ventas</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <!-- CHART.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- ===== HEADER ===== -->
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <h1 style="font-size: 1.5em;">🏪 Sistema de Ventas</h1>
+            </div>
+            <div class="user-info">
+                <!-- ===== PANEL FINANCIERO ===== -->
+                <div class="financial-panel">
+                    <div class="item">
+                        <span class="label">💰 Ventas:</span>
+                        <span class="value-sales" id="totalSalesDisplay">$0.00</span>
+                    </div>
+                    <div class="item">
+                        <span class="label">💸 Retiros:</span>
+                        <span class="value-withdrawals" id="totalWithdrawalsDisplay">$0.00</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="item">
+                        <span class="label">💵 Caja:</span>
+                        <span class="value-cash" id="totalCashDisplay">$0.00</span>
+                    </div>
+                </div>
+                
+                <button id="withdrawBtn" class="btn btn-warning" title="Retirar ingresos">
+                    💸 Retirar
+                </button>
+                
+                <button id="themeToggle" class="theme-toggle" title="Cambiar tema">
+                    <span class="icon" id="themeIcon">🌙</span>
+                    <span id="themeText">Modo Oscuro</span>
+                </button>
+                <span id="userName" style="font-weight: 600;">👤 Cargando...</span>
+                <button id="logoutBtn" class="btn btn-danger">🚪 Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <!-- ===== TABS ===== -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="products">📦 Productos</button>
+            <button class="tab-btn" data-tab="inventory">📊 Inventario</button>
+            <button class="tab-btn" data-tab="sales">💵 Ventas</button>
+            <button class="tab-btn" data-tab="finances">💰 Finanzas</button>
+            <button class="tab-btn" data-tab="stats">📈 Estadísticas</button>
+            <button class="tab-btn" data-tab="categories">📂 Categorías</button>
+        </nav>
+
+        <!-- ===== CONTENIDO ===== -->
+        <div class="tab-content">
+
+            <!-- ==================== TAB: PRODUCTOS ==================== -->
+            <div id="products" class="tab-panel active">
+                <div class="section-header">
+                    <h2>📦 Gestión de Productos</h2>
+                    <button onclick="window.openAddProduct()" class="btn btn-success">
+                        ➕ Agregar Producto
+                    </button>
+                </div>
+                
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        id="searchProducts" 
+                        placeholder="🔍 Buscar productos por nombre..."
+                        class="search-input"
+                    />
+                    <select id="filterCategory" class="filter-select">
+                        <option value="">📂 Todas las categorías</option>
+                    </select>
+                    <span class="search-results" id="productCount">📊 Cargando...</span>
+                </div>
+                
+                <div id="productList" class="table-container">
+                    <div class="empty-state">
+                        <p>Cargando productos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: INVENTARIO ==================== -->
+            <div id="inventory" class="tab-panel">
+                <div class="section-header">
+                    <h2>📊 Control de Inventario</h2>
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        🔄 Actualizar
+                    </button>
+                </div>
+                
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        id="searchInventory" 
+                        placeholder="🔍 Buscar en inventario..."
+                        class="search-input"
+                    />
+                    <span class="search-results" id="inventoryCount">📊 Cargando...</span>
+                </div>
+                
+                <div id="inventoryList" class="table-container">
+                    <div class="empty-state">
+                        <p>Cargando inventario...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: VENTAS ==================== -->
+            <div id="sales" class="tab-panel">
+                
+                <div class="sales-section">
+                    <div class="section-header">
+                        <h2>💰 Registrar Venta</h2>
+                        <button id="openMultiSaleBtn" class="btn btn-primary">
+                            🛒 Venta Múltiple
+                        </button>
+                    </div>
+                    <div class="sales-form">
+                        <div class="form-group">
+                            <label>📦 Producto</label>
+                            <select id="saleProduct">
+                                <option value="">Cargando productos...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>🔢 Cantidad</label>
+                            <input 
+                                type="number" 
+                                id="saleQuantity" 
+                                min="1" 
+                                value="1"
+                                placeholder="1"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label>💲 Precio Unitario</label>
+                            <input 
+                                type="text" 
+                                id="salePrice" 
+                                step="0.01" 
+                                placeholder="Se carga automáticamente"
+                                readonly
+                                style="background: #f5f5f5; cursor: not-allowed;"
+                            />
+                            <small style="color:var(--text-muted); display:block; margin-top: 4px;">
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label>🧾 Total</label>
+                            <input 
+                                type="text" 
+                                id="saleTotal" 
+                                readonly 
+                                placeholder="$0.00"
+                                style="background: #f5f5f5; cursor: not-allowed;"
+                            />
+                        </div>
+                        <button id="registerSaleBtn" class="btn btn-success" style="height: 42px;">
+                            💰 Registrar Venta
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sales-section">
+                    <h2>📊 Resumen de Ventas</h2>
+                    <div id="salesSummary">
+                        <div class="empty-state">
+                            <p>Cargando resumen...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sales-section">
+                    <h2>📋 Últimas Ventas</h2>
+                    <div id="salesList" class="table-container">
+                        <div class="empty-state">
+                            <p>Cargando ventas...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: FINANZAS ==================== -->
+            <div id="finances" class="tab-panel">
+                <div class="section-header">
+                    <h2>💰 Historial de Retiros</h2>
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        🔄 Actualizar
+                    </button>
+                </div>
+                <div id="withdrawalsList" class="table-container">
+                    <div class="empty-state">
+                        <p>Cargando retiros...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: ESTADÍSTICAS ==================== -->
+            <div id="stats" class="tab-panel">
+                <div class="section-header">
+                    <h2>📈 Panel de Estadísticas</h2>
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        🔄 Actualizar
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="card-stats">
+                        <h3>💰 Ventas Totales</h3>
+                        <p class="number-stats" id="statsTotalSales">$0.00</p>
+                        <small style="color: var(--text-muted);">Historial completo</small>
+                    </div>
+                    <div class="card-stats">
+                        <h3>📦 Productos</h3>
+                        <p class="number-stats" id="statsTotalProducts">0</p>
+                        <small style="color: var(--text-muted);">En inventario</small>
+                    </div>
+                    <div class="card-stats" style="border-color: #ed8936;">
+                        <h3>⚠️ Stock Bajo</h3>
+                        <p class="number-stats" id="statsLowStock" style="color: #ed8936;">0</p>
+                        <small style="color: var(--text-muted);">Productos con menos de 5 unidades</small>
+                    </div>
+                    <div class="card-stats" style="border-color: #f56565;">
+                        <h3>🚫 Agotados</h3>
+                        <p class="number-stats" id="statsOutOfStock" style="color: #f56565;">0</p>
+                        <small style="color: var(--text-muted);">Productos sin stock</small>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="chart-container">
+                        <h3>📊 Ventas por Día</h3>
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>📂 Productos por Categoría</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px;">
+                    <div class="chart-container">
+                        <h3>💰 Ingresos vs Retiros</h3>
+                        <canvas id="incomeExpenseChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- ✅ NUEVO: TOP 5 PRODUCTOS MÁS VENDIDOS -->
+                <div class="chart-container" style="margin-top: 20px;">
+                    <h3>🏆 Top 5 Productos Más Vendidos</h3>
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: CATEGORÍAS ==================== -->
+            <div id="categories" class="tab-panel">
+                <div class="section-header">
+                    <h2>📂 Gestión de Categorías</h2>
+                    <button onclick="window.openAddCategory()" class="btn btn-success">
+                        ➕ Agregar Categoría
+                    </button>
+                </div>
+                <div id="categoriesList" class="table-container">
+                    <div class="empty-state">
+                        <p>Cargando categorías...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ===== MODAL: PRODUCTO ===== -->
+        <div id="productModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle">➕ Agregar Producto</h2>
+                
+                <form id="productForm">
+                    <input type="hidden" id="productId" />
+
+                    <div class="form-group">
+                        <label>📛 Nombre del Producto <span style="color: red;">*</span></label>
+                        <input 
+                            type="text" 
+                            id="prodName" 
+                            required 
+                            placeholder="Ej: Feastables (60g)"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label>📝 Descripción</label>
+                        <textarea 
+                            id="prodDescription" 
+                            placeholder="Descripción detallada del producto..."
+                            rows="2"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📂 Categoría</label>
+                        <select id="prodCategory">
+                            <option value="">Sin categoría</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📦 Tipo de Producto</label>
+                        <select id="prodType">
+                            <option value="unit">🔹 Por Pieza</option>
+                            <option value="batch">📦 Por Lote</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group batch-fields" style="display: none;">
+                        <label>📏 Tamaño del Lote</label>
+                        <input 
+                            type="number" 
+                            id="prodBatchSize" 
+                            min="1" 
+                            placeholder="Ej: 10"
+                        />
+                        <small style="color: var(--text-muted);">Cantidad de piezas por lote</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>💰 Costo de Compra <span style="color: red;">*</span></label>
+                        <input 
+                            type="number" 
+                            id="prodCost" 
+                            step="0.01" 
+                            required 
+                            placeholder="0.00"
+                        />
+                    </div>
+
+                    <div class="form-group" id="prodPriceContainer">
+                        <label>💰 Precio de Venta <span style="color: red;">*</span></label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <div style="flex: 1;">
+                                <input 
+                                    type="number" 
+                                    id="prodPrice" 
+                                    step="0.01" 
+                                    value="0.00"
+                                    placeholder="Ingresa el precio de venta"
+                                    required
+                                    style="width: 100%; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px;"
+                                />
+                                <small style="color:var(--text-muted); display:block; margin-top: 4px;">
+                                    💡 Ingresa el <strong>costo</strong> para ver el precio sugerido
+                                </small>
+                            </div>
+                            <button 
+                                type="button" 
+                                onclick="window.applySuggestedPrice()" 
+                                class="btn btn-primary"
+                                style="white-space: nowrap; height: 42px;"
+                            >
+                                💡 Usar Sugerido
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📊 Stock Inicial</label>
+                        <input 
+                            type="number" 
+                            id="prodStock" 
+                            min="0" 
+                            placeholder="0"
+                        />
+                        <small style="color: var(--text-muted);">Cantidad inicial en inventario</small>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="btn btn-success" style="flex: 1;">
+                            💾 Guardar Producto
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="document.getElementById('productModal').style.display='none'">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: INVENTARIO ===== -->
+        <div id="inventoryModal" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <span class="close-inventory">&times;</span>
+                <h2 id="inventoryModalTitle">📦 Ajustar Inventario</h2>
+                
+                <div style="text-align: center; margin: 10px 0;">
+                    <p id="inventoryProductName" style="font-size: 1.2em; font-weight: bold;"></p>
+                    <p>Stock actual: <strong id="inventoryCurrentStock">0</strong> unidades</p>
+                </div>
+                
+                <div style="display: flex; gap: 15px; align-items: center; justify-content: center; margin: 20px 0;">
+                    <button id="invSubtractBtn" class="btn btn-danger" style="font-size: 24px; width: 50px; height: 50px; border-radius: 50%;">
+                        −
+                    </button>
+                    <input 
+                        type="number" 
+                        id="inventoryQuantity" 
+                        value="1" 
+                        min="1" 
+                        style="width: 80px; text-align: center; font-size: 24px; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px;"
+                    />
+                    <button id="invAddBtn" class="btn btn-success" style="font-size: 24px; width: 50px; height: 50px; border-radius: 50%;">
+                        +
+                    </button>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="invConfirmBtn" class="btn btn-primary" style="flex: 1;">
+                        ✅ Aplicar Cambio
+                    </button>
+                    <button id="invCancelBtn" class="btn btn-danger" style="flex: 1;">
+                        ❌ Cancelar
+                    </button>
+                </div>
+                
+                <div id="inventoryMessage" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: RETIRO ===== -->
+        <div id="withdrawModal" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <span class="close-withdraw">&times;</span>
+                <h2>💸 Retirar Efectivo</h2>
+                
+                <div class="form-group">
+                    <label>💰 Cantidad a retirar</label>
+                    <input 
+                        type="number" 
+                        id="withdrawAmount" 
+                        step="0.01" 
+                        placeholder="0.00"
+                        required
+                        style="font-size: 20px; padding: 12px;"
+                    />
+                </div>
+                
+                <div class="form-group">
+                    <label>📝 Motivo / Descripción</label>
+                    <input 
+                        type="text" 
+                        id="withdrawDescription" 
+                        placeholder="Ej: Compra de insumos, Pago de servicios..."
+                    />
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="confirmWithdrawBtn" class="btn btn-warning" style="flex: 1;">
+                        Confirmar Retiro
+                    </button>
+                    <button id="cancelWithdrawBtn" class="btn btn-danger" style="flex: 1;">
+                        Cancelar
+                    </button>
+                </div>
+                
+                <div id="withdrawMessage" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: VENTA MÚLTIPLE ===== -->
+        <div id="multiSaleModal" class="modal">
+            <div class="modal-content" style="max-width: 700px;">
+                <span class="close-multi-sale">&times;</span>
+                <h2>🛒 Nueva Venta (Múltiples Productos)</h2>
+                
+                <div id="saleItemsContainer">
+                    <div id="saleItemsList"></div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; align-items: end; margin: 15px 0; padding: 15px; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                        <label>📦 Producto</label>
+                        <select id="multiSaleProduct">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label>🔢 Cantidad</label>
+                        <input type="number" id="multiSaleQuantity" value="1" min="1" />
+                    </div>
+                    <button id="addItemBtn" class="btn btn-success" style="height: 42px;">Agregar</button>
+                </div>
+                
+                <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; font-size: 1.1em;">
+                        <span>Subtotal:</span>
+                        <span id="multiSaleSubtotal">$0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold; margin-top: 5px; border-top: 2px solid var(--border-color); padding-top: 5px;">
+                        <span>Total:</span>
+                        <span id="multiSaleTotal">$0.00</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button id="confirmMultiSaleBtn" class="btn btn-success" style="flex: 1;">
+                        Registrar Venta
+                    </button>
+                    <button id="cancelMultiSaleBtn" class="btn btn-danger" style="flex: 1;">
+                        Cancelar
+                    </button>
+                </div>
+                
+                <div id="multiSaleMessage" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: CATEGORÍA ===== -->
+        <div id="categoryModal" class="modal">
+            <div class="modal-content" style="max-width: 400px;">
+                <span class="close-category">&times;</span>
+                <h2 id="categoryModalTitle">➕ Agregar Categoría</h2>
+                
+                <form id="categoryForm">
+                    <input type="hidden" id="categoryId" />
+                    
+                    <div class="form-group">
+                        <label>📛 Nombre de la Categoría <span style="color: red;">*</span></label>
+                        <input 
+                            type="text" 
+                            id="categoryName" 
+                            required 
+                            placeholder="Ej: Dulces"
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🎨 Icono (Emoji)</label>
+                        <input 
+                            type="text" 
+                            id="categoryIcon" 
+                            placeholder="🍬"
+                            maxlength="2"
+                            style="font-size: 24px; text-align: center;"
+                        />
+                        <small style="color: var(--text-muted);">Ej: 🍬, 🍭, 🍦</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🎨 Color</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input 
+                                type="color" 
+                                id="categoryColor" 
+                                value="#667eea"
+                                style="width: 60px; height: 40px; padding: 2px; cursor: pointer;"
+                            />
+                            <input 
+                                type="text" 
+                                id="categoryColorText" 
+                                placeholder="#667eea"
+                                style="flex: 1;"
+                            />
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="btn btn-success" style="flex: 1;">
+                            💾 Guardar Categoría
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="document.getElementById('categoryModal').style.display='none'">
+                            ❌ Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== SCRIPTS ===== -->
+        <script type="module">
+            import './js/theme.js';
+        </script>
+        <script type="module" src="js/app.js"></script>
+    </div>
+</body>
+</html>

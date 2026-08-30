@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Ventas</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+        /* Estilos adicionales para la página de bienvenida */
+        .welcome-card .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .welcome-card .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .welcome-card .features .feature-item {
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .welcome-card .features .feature-item span {
+            margin-right: 8px;
+        }
+        .welcome-card h1 {
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+        .welcome-card p {
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+        @media (max-width: 480px) {
+            .welcome-card .features {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Estilo para el botón de tema en index */
+        .theme-toggle-index {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+        .theme-toggle-index:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+        .theme-toggle-index .icon {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="welcome-card">
+            <!-- ===== BOTÓN DE MODO OSCURO ===== -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button id="themeToggle" class="theme-toggle-index" title="Cambiar tema">
+                    <span class="icon">🌙</span>
+                    <span id="themeText">Oscuro</span>
+                </button>
+            </div>
+
+            <h1>🏪 Sistema de Ventas</h1>
+            <p style="font-size: 1.2em;">
+                Gestión de productos, inventario y ventas en tiempo real
+            </p>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <span>📦</span> Gestión de productos
+                </div>
+                <div class="feature-item">
+                    <span>📊</span> Control de inventario
+                </div>
+                <div class="feature-item">
+                    <span>💵</span> Registro de ventas
+                </div>
+                <div class="feature-item">
+                    <span>🔄</span> Actualización en tiempo real
+                </div>
+            </div>
+
+            <a href="login.html" class="btn btn-primary" style="font-size: 1.1em; padding: 12px 40px;">
+                🔐 Iniciar Sesión
+            </a>
+
+            <div class="subtitle">
+                <strong>📝 Demo:</strong> admin@ventas.com / admin123
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script type="module">
+        import './js/theme.js';
+    </script>
+</body>
+</html>

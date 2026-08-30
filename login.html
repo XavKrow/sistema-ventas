@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Sistema de Ventas</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+        /* Estilos específicos para el botón de tema en login */
+        .theme-toggle-login {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+        .theme-toggle-login:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+        .theme-toggle-login .icon {
+            font-size: 14px;
+        }
+        
+        /* Ajustes para modo oscuro en login */
+        [data-theme="dark"] .login-container {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        }
+        
+        [data-theme="dark"] .login-form {
+            background: var(--bg-card);
+        }
+        
+        [data-theme="dark"] .login-form h2 {
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .login-form p {
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-form">
+            <!-- ===== BOTÓN MODO OSCURO ===== -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button id="themeToggle" class="theme-toggle-login" title="Cambiar tema">
+                    <span class="icon">🌙</span>
+                    <span id="themeText">Oscuro</span>
+                </button>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="font-size: 2.5em; margin-bottom: 5px;">🏪</h1>
+                <h2>Iniciar Sesión</h2>
+                <p style="color: var(--text-muted); font-size: 14px;">
+                    Ingresa tus credenciales para acceder
+                </p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>📧 Correo Electrónico</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="admin@ventas.com" 
+                        value="admin@ventas.com"
+                        required 
+                        autofocus
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label>🔒 Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="••••••••" 
+                        value="admin123"
+                        required 
+                    />
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                    🚀 Ingresar
+                </button>
+
+                <div id="loginError" class="error-message"></div>
+            </form>
+
+            <div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px; color: var(--text-secondary); border: 1px solid var(--border-color); transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;">
+                <p style="margin-bottom: 5px;"><strong>📝 Credenciales de prueba:</strong></p>
+                <p style="margin: 2px 0;">📧 Email: <strong>admin@ventas.com</strong></p>
+                <p style="margin: 2px 0;">🔑 Contraseña: <strong>admin123</strong></p>
+            </div>
+
+            <div style="margin-top: 15px; text-align: center; font-size: 12px; color: var(--text-muted);">
+                <a href="index.html" style="color: #667eea; text-decoration: none;">← Volver al inicio</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script type="module">
+        // Cargar tema primero
+        import './js/theme.js';
+    </script>
+    
+    <script type="module">
+        import { loginUser } from './js/firebase-config.js';
+
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorDiv = document.getElementById('loginError');
+
+        // Limpiar error al escribir
+        emailInput.addEventListener('input', () => errorDiv.textContent = '');
+        passwordInput.addEventListener('input', () => errorDiv.textContent = '');
+
+        // Precargar credenciales de prueba al hacer clic en el campo
+        emailInput.addEventListener('focus', function() {
+            if (!this.value) this.value = 'admin@ventas.com';
+        });
+        passwordInput.addEventListener('focus', function() {
+            if (!this.value) this.value = 'admin123';
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!email || !password) {
+                errorDiv.textContent = '❌ Por favor completa todos los campos';
+                return;
+            }
+
+            // Mostrar estado de carga
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Cargando...';
+            btn.disabled = true;
+
+            try {
+                const result = await loginUser(email, password);
+
+                if (result.success) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errorDiv.textContent = '❌ Email o contraseña incorrectos';
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                errorDiv.textContent = '❌ Error al conectar con el servidor';
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Permitir Enter en los campos
+        emailInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') passwordInput.focus();
+        });
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') form.dispatchEvent(new Event('submit'));
+        });
+    </script>
+</body>
+</html>
