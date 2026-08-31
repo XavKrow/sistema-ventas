@@ -29,7 +29,11 @@ export const renderWithdrawals = async () => {
         const withdrawals = await getCashWithdrawals();
         
         if (!withdrawals || withdrawals.length === 0) {
-            container.innerHTML = '<div class="empty-state"><p>No hay retiros registrados</p></div>';
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p><i class="fas fa-hand-holding-usd"></i> No hay retiros registrados</p>
+                </div>
+            `;
             return;
         }
         
@@ -38,11 +42,11 @@ export const renderWithdrawals = async () => {
                 <table>
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            <th>Descripción</th>
-                            <th>Cantidad</th>
-                            <th>Usuario</th>
-                            <th>Acción</th>
+                            <th><i class="fas fa-calendar-alt"></i> Fecha</th>
+                            <th><i class="fas fa-align-left"></i> Descripción</th>
+                            <th><i class="fas fa-dollar-sign"></i> Cantidad</th>
+                            <th><i class="fas fa-user"></i> Usuario</th>
+                            <th><i class="fas fa-cogs"></i> Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,11 +77,11 @@ export const renderWithdrawals = async () => {
                 <tr>
                     <td>${dateStr}</td>
                     <td>${w.description || 'Retiro de efectivo'}</td>
-                    <td><strong style="color: #f56565;">-${formatCurrency(amount)}</strong></td>
+                    <td><strong style="color: #f56565;"><i class="fas fa-minus-circle"></i> ${formatCurrency(amount)}</strong></td>
                     <td>${w.user || 'Sistema'}</td>
                     <td>
                         <button class="btn btn-sm btn-danger" onclick="window.undoWithdrawalHandler('${w.id}')">
-                            ↩️ Deshacer
+                            <i class="fas fa-undo"></i> Deshacer
                         </button>
                     </td>
                 </tr>
@@ -88,7 +92,7 @@ export const renderWithdrawals = async () => {
             html += `
                 <tr>
                     <td colspan="5" style="text-align:center; color:var(--text-muted);">
-                        Mostrando 50 de ${withdrawals.length} retiros
+                        <i class="fas fa-info-circle"></i> Mostrando 50 de ${withdrawals.length} retiros
                     </td>
                 </tr>
             `;
@@ -99,7 +103,11 @@ export const renderWithdrawals = async () => {
         
     } catch (error) {
         console.error('Error al renderizar retiros:', error);
-        container.innerHTML = '<div class="empty-state"><p>Error al cargar retiros</p></div>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <p><i class="fas fa-exclamation-triangle" style="color: #f56565;"></i> Error al cargar retiros</p>
+            </div>
+        `;
     }
 };
 

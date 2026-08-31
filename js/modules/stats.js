@@ -73,9 +73,9 @@ const showEmptyChart = (canvasId, icon, title, subtitle, extraText = '') => {
     
     parent.innerHTML = `
         <div class="chart-empty">
-            <div class="icon">${icon}</div>
-            <div class="title">${title}</div>
-            <div class="subtitle">${subtitle}</div>
+            <div class="icon" style="font-size: 48px;">${icon}</div>
+            <div class="title" style="font-size: 16px; font-weight: 600; margin-top: 10px;">${title}</div>
+            <div class="subtitle" style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">${subtitle}</div>
             ${extraText ? `<div style="margin-top: 8px; font-size: 13px; color: var(--text-muted);">${extraText}</div>` : ''}
         </div>
     `;
@@ -90,13 +90,13 @@ const updateSalesChart = async (sales) => {
     if (!ctx) return;
     
     if (!sales || sales.length === 0) {
-        showEmptyChart('salesChart', '📊', 'No hay ventas registradas', 'Registra tu primera venta para ver estadísticas');
+        showEmptyChart('salesChart', '<i class="fas fa-chart-bar" style="color: #a0aec0;"></i>', 'No hay ventas registradas', 'Registra tu primera venta para ver estadísticas');
         return;
     }
     
     if (sales.length < 2) {
         const total = sales.reduce((sum, s) => sum + (s.total || s.totalPrice || 0), 0);
-        showEmptyChart('salesChart', '📈', 'Se necesitan más ventas', 'Registra al menos 2 ventas para ver tendencias', `Total: ${formatCurrency(total)}`);
+        showEmptyChart('salesChart', '<i class="fas fa-chart-line" style="color: #ed8936;"></i>', 'Se necesitan más ventas', 'Registra al menos 2 ventas para ver tendencias', `Total: ${formatCurrency(total)}`);
         return;
     }
     
@@ -176,7 +176,7 @@ const updateCategoryChart = async (products) => {
     if (!ctx) return;
     
     if (!products || products.length === 0) {
-        showEmptyChart('categoryChart', '📦', 'No hay productos registrados', 'Agrega productos para ver la distribución por categoría');
+        showEmptyChart('categoryChart', '<i class="fas fa-box" style="color: #a0aec0;"></i>', 'No hay productos registrados', 'Agrega productos para ver la distribución por categoría');
         return;
     }
     
@@ -198,7 +198,7 @@ const updateCategoryChart = async (products) => {
     const backgroundColors = labels.map(label => colors[label] || 'rgba(102, 126, 234, 0.6)');
     
     if (labels.length === 1 && labels[0] === 'Sin categoría') {
-        showEmptyChart('categoryChart', '🏷️', 'Los productos no tienen categoría', 'Asigna categorías a tus productos para ver estadísticas', `Total: ${products.length} productos`);
+        showEmptyChart('categoryChart', '<i class="fas fa-tags" style="color: #ed8936;"></i>', 'Los productos no tienen categoría', 'Asigna categorías a tus productos para ver estadísticas', `Total: ${products.length} productos`);
         return;
     }
     
@@ -244,7 +244,7 @@ const updateIncomeExpenseChart = async (sales) => {
     if (!ctx) return;
     
     if (!sales || sales.length === 0) {
-        showEmptyChart('incomeExpenseChart', '📊', 'No hay datos de ingresos', 'Registra ventas para ver la comparación de ingresos vs gastos');
+        showEmptyChart('incomeExpenseChart', '<i class="fas fa-chart-area" style="color: #a0aec0;"></i>', 'No hay datos de ingresos', 'Registra ventas para ver la comparación de ingresos vs gastos');
         return;
     }
     
@@ -295,7 +295,7 @@ const updateIncomeExpenseChart = async (sales) => {
         const hasExpense = expenseData.some(v => v > 0);
         
         if (!hasIncome && !hasExpense) {
-            showEmptyChart('incomeExpenseChart', '💰', 'No hay suficientes datos', 'Registra ventas y retiros para ver la comparación');
+            showEmptyChart('incomeExpenseChart', '<i class="fas fa-coins" style="color: #a0aec0;"></i>', 'No hay suficientes datos', 'Registra ventas y retiros para ver la comparación');
             return;
         }
         
@@ -359,7 +359,7 @@ const updateIncomeExpenseChart = async (sales) => {
         });
     } catch (error) {
         console.error('Error al crear gráfica de ingresos/gastos:', error);
-        showEmptyChart('incomeExpenseChart', '❌', 'Error al cargar datos', 'Reintenta actualizando la página');
+        showEmptyChart('incomeExpenseChart', '<i class="fas fa-exclamation-triangle" style="color: #f56565;"></i>', 'Error al cargar datos', 'Reintenta actualizando la página');
     }
 };
 
@@ -372,7 +372,7 @@ const updateTopProductsChart = async (sales) => {
     if (!ctx) return;
     
     if (!sales || sales.length === 0) {
-        showEmptyChart('topProductsChart', '🏆', 'No hay ventas registradas', 'Registra ventas para ver los productos más vendidos');
+        showEmptyChart('topProductsChart', '<i class="fas fa-trophy" style="color: #a0aec0;"></i>', 'No hay ventas registradas', 'Registra ventas para ver los productos más vendidos');
         return;
     }
     
@@ -414,7 +414,7 @@ const updateTopProductsChart = async (sales) => {
     
     // Verificar si hay datos
     if (sorted.length === 0) {
-        showEmptyChart('topProductsChart', '🏆', 'No hay productos vendidos', 'Registra ventas para ver los productos más vendidos');
+        showEmptyChart('topProductsChart', '<i class="fas fa-box-open" style="color: #a0aec0;"></i>', 'No hay productos vendidos', 'Registra ventas para ver los productos más vendidos');
         return;
     }
     

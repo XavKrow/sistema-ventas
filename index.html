@@ -4,7 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sistema de Ventas</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="css/styles.css" />
+    
+    <!-- ✅ Favicon con emoji (100% confiable) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏪</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏪</text></svg>">
+    
     <style>
         /* Estilos adicionales para la página de bienvenida */
         .welcome-card .subtitle {
@@ -33,12 +40,18 @@
             border: 1px solid var(--border-color);
             transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
-        .welcome-card .features .feature-item span {
+        .welcome-card .features .feature-item i {
             margin-right: 8px;
+            width: 20px;
+            text-align: center;
+            color: #667eea;
         }
         .welcome-card h1 {
             color: var(--text-primary);
             transition: color 0.3s ease;
+        }
+        .welcome-card h1 i {
+            color: #667eea;
         }
         .welcome-card p {
             color: var(--text-secondary);
@@ -69,7 +82,7 @@
             transform: scale(1.05);
             border-color: #667eea;
         }
-        .theme-toggle-index .icon {
+        .theme-toggle-index i {
             font-size: 14px;
         }
     </style>
@@ -80,37 +93,37 @@
             <!-- ===== BOTÓN DE MODO OSCURO ===== -->
             <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
                 <button id="themeToggle" class="theme-toggle-index" title="Cambiar tema">
-                    <span class="icon">🌙</span>
+                    <i class="fas fa-moon" id="themeIcon"></i>
                     <span id="themeText">Oscuro</span>
                 </button>
             </div>
 
-            <h1>🏪 Sistema de Ventas</h1>
+            <h1><i class="fas fa-store"></i> Sistema de Ventas</h1>
             <p style="font-size: 1.2em;">
-                Gestión de productos, inventario y ventas en tiempo real
+                <i class="fas fa-boxes"></i> Gestión de productos, inventario y ventas en tiempo real
             </p>
             
             <div class="features">
                 <div class="feature-item">
-                    <span>📦</span> Gestión de productos
+                    <i class="fas fa-box"></i> Gestión de productos
                 </div>
                 <div class="feature-item">
-                    <span>📊</span> Control de inventario
+                    <i class="fas fa-clipboard-list"></i> Control de inventario
                 </div>
                 <div class="feature-item">
-                    <span>💵</span> Registro de ventas
+                    <i class="fas fa-money-bill-wave"></i> Registro de ventas
                 </div>
                 <div class="feature-item">
-                    <span>🔄</span> Actualización en tiempo real
+                    <i class="fas fa-sync-alt"></i> Actualización en tiempo real
                 </div>
             </div>
 
             <a href="login.html" class="btn btn-primary" style="font-size: 1.1em; padding: 12px 40px;">
-                🔐 Iniciar Sesión
+                <i class="fas fa-lock"></i> Iniciar Sesión
             </a>
 
             <div class="subtitle">
-                <strong>📝 Demo:</strong> admin@ventas.com / admin123
+                <i class="fas fa-info-circle"></i> <strong>Demo:</strong> admin@ventas.com / admin123
             </div>
         </div>
     </div>

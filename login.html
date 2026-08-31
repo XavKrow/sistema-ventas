@@ -4,7 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - Sistema de Ventas</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link rel="stylesheet" href="css/styles.css" />
+    
+    <!-- ✅ Favicon con emoji (100% confiable) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏪</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏪</text></svg>">
+    
     <style>
         /* Estilos específicos para el botón de tema en login */
         .theme-toggle-login {
@@ -25,7 +32,7 @@
             transform: scale(1.05);
             border-color: #667eea;
         }
-        .theme-toggle-login .icon {
+        .theme-toggle-login i {
             font-size: 14px;
         }
         
@@ -53,22 +60,24 @@
             <!-- ===== BOTÓN MODO OSCURO ===== -->
             <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
                 <button id="themeToggle" class="theme-toggle-login" title="Cambiar tema">
-                    <span class="icon">🌙</span>
+                    <i class="fas fa-moon" id="themeIcon"></i>
                     <span id="themeText">Oscuro</span>
                 </button>
             </div>
 
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="font-size: 2.5em; margin-bottom: 5px;">🏪</h1>
-                <h2>Iniciar Sesión</h2>
+                <h1 style="font-size: 2.5em; margin-bottom: 5px;">
+                    <i class="fas fa-store" style="color: #667eea;"></i>
+                </h1>
+                <h2><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</h2>
                 <p style="color: var(--text-muted); font-size: 14px;">
-                    Ingresa tus credenciales para acceder
+                    <i class="fas fa-info-circle"></i> Ingresa tus credenciales para acceder
                 </p>
             </div>
 
             <form id="loginForm">
                 <div class="form-group">
-                    <label>📧 Correo Electrónico</label>
+                    <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
                     <input 
                         type="email" 
                         id="email" 
@@ -80,7 +89,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>🔒 Contraseña</label>
+                    <label><i class="fas fa-lock"></i> Contraseña</label>
                     <input 
                         type="password" 
                         id="password" 
@@ -91,20 +100,28 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
-                    🚀 Ingresar
+                    <i class="fas fa-rocket"></i> Ingresar
                 </button>
 
                 <div id="loginError" class="error-message"></div>
             </form>
 
             <div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px; color: var(--text-secondary); border: 1px solid var(--border-color); transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;">
-                <p style="margin-bottom: 5px;"><strong>📝 Credenciales de prueba:</strong></p>
-                <p style="margin: 2px 0;">📧 Email: <strong>admin@ventas.com</strong></p>
-                <p style="margin: 2px 0;">🔑 Contraseña: <strong>admin123</strong></p>
+                <p style="margin-bottom: 5px;">
+                    <i class="fas fa-info-circle"></i> <strong>Credenciales de prueba:</strong>
+                </p>
+                <p style="margin: 2px 0;">
+                    <i class="fas fa-envelope"></i> Email: <strong>admin@ventas.com</strong>
+                </p>
+                <p style="margin: 2px 0;">
+                    <i class="fas fa-key"></i> Contraseña: <strong>admin123</strong>
+                </p>
             </div>
 
             <div style="margin-top: 15px; text-align: center; font-size: 12px; color: var(--text-muted);">
-                <a href="index.html" style="color: #667eea; text-decoration: none;">← Volver al inicio</a>
+                <a href="index.html" style="color: #667eea; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Volver al inicio
+                </a>
             </div>
         </div>
     </div>

@@ -21,7 +21,11 @@ export const renderSales = (sales) => {
     if (!container) return;
     
     if (!sales || sales.length === 0) {
-        container.innerHTML = `<div class="empty-state"><p>💵 No hay ventas registradas</p></div>`;
+        container.innerHTML = `
+            <div class="empty-state">
+                <p><i class="fas fa-money-bill-wave"></i> No hay ventas registradas</p>
+            </div>
+        `;
         return;
     }
     
@@ -58,12 +62,12 @@ export const renderSales = (sales) => {
             <table>
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Productos</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
-                        <th>Usuario</th>
-                        <th>Acciones</th>
+                        <th><i class="fas fa-calendar-alt"></i> Fecha</th>
+                        <th><i class="fas fa-box"></i> Productos</th>
+                        <th><i class="fas fa-hashtag"></i> Cantidad</th>
+                        <th><i class="fas fa-dollar-sign"></i> Total</th>
+                        <th><i class="fas fa-user"></i> Usuario</th>
+                        <th><i class="fas fa-cogs"></i> Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -98,14 +102,14 @@ export const renderSales = (sales) => {
         
         html += `
             <tr>
-                <td>${dateStr}</td>
+                <td><i class="fas fa-clock"></i> ${dateStr}</td>
                 <td><strong>${productsList}</strong></td>
                 <td>${totalItems}</td>
-                <td><strong>${formatCurrency(sale.total || sale.totalPrice || 0)}</strong></td>
-                <td>${sale.user || 'Sistema'}</td>
+                <td><strong style="color: #48bb78;"><i class="fas fa-dollar-sign"></i> ${formatCurrency(sale.total || sale.totalPrice || 0)}</strong></td>
+                <td><i class="fas fa-user"></i> ${sale.user || 'Sistema'}</td>
                 <td>
                     <button class="btn btn-sm btn-danger" onclick="window.undoSaleHandler('${sale.id}')">
-                        ↩️ Deshacer
+                        <i class="fas fa-undo"></i> Deshacer
                     </button>
                 </td>
             </tr>
@@ -116,7 +120,7 @@ export const renderSales = (sales) => {
         html += `
             <tr>
                 <td colspan="6" style="text-align:center; color:var(--text-muted);">
-                    Mostrando 50 de ${sales.length} ventas
+                    <i class="fas fa-info-circle"></i> Mostrando 50 de ${sales.length} ventas
                 </td>
             </tr>
         `;
@@ -144,7 +148,7 @@ export const registerSale = async () => {
         const products = await getProducts();
         const product = products.find(p => p.id === productId);
         if (!product) {
-            showNotification('Producto no encontrado', 'error');
+            showNotification('❌ Producto no encontrado', 'error');
             return;
         }
         
@@ -186,7 +190,7 @@ export const registerSale = async () => {
         document.getElementById('saleTotal').value = '';
     } catch (error) {
         console.error(error);
-        showNotification('Error al registrar venta', 'error');
+        showNotification('❌ Error al registrar venta', 'error');
     }
 };
 
@@ -240,7 +244,7 @@ export const loadProductPrice = async () => {
         
     } catch (error) {
         console.error('Error al cargar precio:', error);
-        showNotification('Error al cargar el precio', 'error');
+        showNotification('❌ Error al cargar el precio', 'error');
     }
 };
 
@@ -250,10 +254,10 @@ export const updateSaleProducts = async (products) => {
     
     const currentValue = select.value;
     
-    select.innerHTML = '<option value="">🔍 Seleccionar producto...</option>';
+    select.innerHTML = '<option value=""><i class="fas fa-search"></i> Seleccionar producto...</option>';
     
     if (!products || products.length === 0) {
-        select.innerHTML += '<option value="" disabled>No hay productos disponibles</option>';
+        select.innerHTML += '<option value="" disabled><i class="fas fa-box-open"></i> No hay productos disponibles</option>';
         return;
     }
     
@@ -289,7 +293,7 @@ const populateMultiSaleProducts = async () => {
     const select = document.getElementById('multiSaleProduct');
     const products = await getProducts();
     
-    select.innerHTML = '<option value="">Seleccionar producto...</option>';
+    select.innerHTML = '<option value=""><i class="fas fa-search"></i> Seleccionar producto...</option>';
     products.forEach(product => {
         const stock = product.stock || 0;
         if (stock > 0) {
@@ -311,7 +315,7 @@ const renderSaleItemsList = () => {
     const container = document.getElementById('saleItemsList');
     
     if (saleItems.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted);">No hay productos agregados</p>';
+        container.innerHTML = '<p style="color: var(--text-muted);"><i class="fas fa-box-open"></i> No hay productos agregados</p>';
         return;
     }
     
@@ -319,11 +323,11 @@ const renderSaleItemsList = () => {
         <table>
             <thead>
                 <tr>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unit.</th>
-                    <th>Subtotal</th>
-                    <th>Acción</th>
+                    <th><i class="fas fa-box"></i> Producto</th>
+                    <th><i class="fas fa-hashtag"></i> Cantidad</th>
+                    <th><i class="fas fa-tag"></i> Precio Unit.</th>
+                    <th><i class="fas fa-calculator"></i> Subtotal</th>
+                    <th><i class="fas fa-cogs"></i> Acción</th>
                 </tr>
             </thead>
             <tbody>
@@ -335,9 +339,11 @@ const renderSaleItemsList = () => {
                 <td><strong>${item.productName}</strong></td>
                 <td>${item.quantity}</td>
                 <td>${formatCurrency(item.unitPrice)}</td>
-                <td>${formatCurrency(item.totalPrice)}</td>
+                <td><strong style="color: #48bb78;">${formatCurrency(item.totalPrice)}</strong></td>
                 <td>
-                    <button class="btn btn-sm btn-danger" onclick="window.removeItemFromSale(${index})">🗑️</button>
+                    <button class="btn btn-sm btn-danger" onclick="window.removeItemFromSale(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             </tr>
         `;
@@ -357,7 +363,7 @@ export const openMultiSaleModal = async () => {
     saleItems = [];
     document.getElementById('multiSaleModal').style.display = 'flex';
     document.getElementById('multiSaleMessage').textContent = '';
-    document.getElementById('saleItemsList').innerHTML = '<p style="color: var(--text-muted);">No hay productos agregados</p>';
+    document.getElementById('saleItemsList').innerHTML = '<p style="color: var(--text-muted);"><i class="fas fa-box-open"></i> No hay productos agregados</p>';
     updateMultiSaleSummary();
     await populateMultiSaleProducts();
 };
@@ -467,8 +473,6 @@ export const undoSaleHandler = async (saleId) => {
     try {
         await undoSale(saleId);
         showNotification('✅ Venta deshecha correctamente', 'success');
-        // La función updateFinancialPanel se importa desde finances.js
-        // Se llamará desde app.js
     } catch (error) {
         showNotification('❌ Error al deshacer venta', 'error');
     }
@@ -483,7 +487,11 @@ export const updateSalesSummary = (sales) => {
     if (!container) return;
     
     if (!sales || sales.length === 0) {
-        container.innerHTML = `<div class="empty-state"><p>No hay ventas para mostrar</p></div>`;
+        container.innerHTML = `
+            <div class="empty-state">
+                <p><i class="fas fa-chart-pie"></i> No hay ventas para mostrar</p>
+            </div>
+        `;
         return;
     }
     
@@ -495,23 +503,23 @@ export const updateSalesSummary = (sales) => {
     container.innerHTML = `
         <div class="summary-cards">
             <div class="card card-primary">
-                <div class="card-icon">📊</div>
-                <h4>Total Ventas</h4>
+                <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
+                <h4><i class="fas fa-shopping-cart"></i> Total Ventas</h4>
                 <p class="number">${total}</p>
             </div>
             <div class="card card-success">
-                <div class="card-icon">💰</div>
-                <h4>Ingresos Totales</h4>
+                <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+                <h4><i class="fas fa-coins"></i> Ingresos Totales</h4>
                 <p class="number">${formatCurrency(revenue)}</p>
             </div>
             <div class="card card-info">
-                <div class="card-icon">🎯</div>
-                <h4>Ticket Promedio</h4>
+                <div class="card-icon"><i class="fas fa-calculator"></i></div>
+                <h4><i class="fas fa-chart-line"></i> Ticket Promedio</h4>
                 <p class="number">${formatCurrency(avg)}</p>
             </div>
             <div class="card card-warning">
-                <div class="card-icon">🏆</div>
-                <h4>Venta Máxima</h4>
+                <div class="card-icon"><i class="fas fa-trophy"></i></div>
+                <h4><i class="fas fa-crown"></i> Venta Máxima</h4>
                 <p class="number">${formatCurrency(maxSale)}</p>
             </div>
         </div>
@@ -522,7 +530,6 @@ export const updateSalesSummary = (sales) => {
 // EXPORTAR FUNCIONES GLOBALES
 // ============================================
 
-// Necesitamos acceder a currentUser desde app.js
 export const setCurrentUser = (user) => {
     currentUser = user;
 };

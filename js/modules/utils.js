@@ -76,14 +76,17 @@ export const getCostPerPiece = (product) => {
 
 /**
  * Mostrar notificación
+ * ✅ Mejorada con iconos según el tipo
  */
 export const showNotification = (message, type = 'success') => {
-    const colors = {
-        success: '#48bb78',
-        error: '#f56565',
-        warning: '#ed8936',
-        info: '#4299e1'
+    const config = {
+        success: { icon: '✅', bg: '#48bb78' },
+        error: { icon: '❌', bg: '#f56565' },
+        warning: { icon: '⚠️', bg: '#ed8936' },
+        info: { icon: 'ℹ️', bg: '#4299e1' }
     };
+    
+    const selected = config[type] || config.info;
     
     const existing = document.querySelector('.notification');
     if (existing) existing.remove();
@@ -95,16 +98,19 @@ export const showNotification = (message, type = 'success') => {
         top: '20px',
         right: '20px',
         padding: '15px 25px',
-        background: colors[type] || colors.info,
+        background: selected.bg,
         color: 'white',
         borderRadius: '8px',
         boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
         zIndex: '1001',
         fontWeight: '600',
         animation: 'slideIn 0.3s ease',
-        maxWidth: '90%'
+        maxWidth: '90%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px'
     });
-    notification.textContent = message;
+    notification.innerHTML = `<span style="font-size: 20px;">${selected.icon}</span> ${message}`;
     document.body.appendChild(notification);
     
     setTimeout(() => {

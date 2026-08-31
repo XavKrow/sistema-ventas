@@ -1,5 +1,5 @@
 // ============================================
-// GESTIÓN DE PRODUCTOS (CON CATEGORÍAS)
+// GESTIÓN DE PRODUCTOS
 // ============================================
 
 import { getProducts, saveProduct, deleteProduct } from '../firebase-config.js';
@@ -23,10 +23,8 @@ export const renderProducts = (products) => {
     
     allProducts = products || [];
     
-    // Aplicar filtros (búsqueda + categoría)
     let filteredProducts = allProducts;
     
-    // Filtro por nombre
     if (currentFilter) {
         const searchTerm = currentFilter.toLowerCase().trim();
         filteredProducts = filteredProducts.filter(product => 
@@ -35,30 +33,28 @@ export const renderProducts = (products) => {
         );
     }
     
-    // Filtro por categoría
     if (currentCategoryFilter) {
         filteredProducts = filteredProducts.filter(product => 
             product.categoria === currentCategoryFilter
         );
     }
     
-    // Actualizar contador
     const countEl = document.getElementById('productCount');
     if (countEl) {
         const totalProductos = allProducts.length;
         const mostrados = filteredProducts.length;
         if (currentFilter || currentCategoryFilter) {
-            countEl.textContent = `📊 ${mostrados} de ${totalProductos} productos`;
+            countEl.innerHTML = `<i class="fas fa-filter"></i> ${mostrados} de ${totalProductos} productos`;
         } else {
-            countEl.textContent = `📊 ${totalProductos} productos`;
+            countEl.innerHTML = `<i class="fas fa-box"></i> ${totalProductos} productos`;
         }
     }
     
     if (!filteredProducts || filteredProducts.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <p>${allProducts.length > 0 ? '🔍 No se encontraron productos' : '📦 No hay productos registrados'}</p>
-                ${allProducts.length === 0 ? `<button onclick="window.openAddProduct()" class="btn btn-primary">➕ Agregar Producto</button>` : ''}
+                <p>${allProducts.length > 0 ? '<i class="fas fa-search"></i> No se encontraron productos' : '<i class="fas fa-box-open"></i> No hay productos registrados'}</p>
+                ${allProducts.length === 0 ? `<button onclick="window.openAddProduct()" class="btn btn-primary"><i class="fas fa-plus"></i> Agregar Producto</button>` : ''}
             </div>
         `;
         return;
@@ -69,13 +65,13 @@ export const renderProducts = (products) => {
             <table>
                 <thead>
                     <tr>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>Tipo</th>
-                        <th>Costo</th>
-                        <th>Precio Venta</th>
-                        <th>Stock</th>
-                        <th>Acciones</th>
+                        <th><i class="fas fa-tag"></i> Producto</th>
+                        <th><i class="fas fa-folder"></i> Categoría</th>
+                        <th><i class="fas fa-box"></i> Tipo</th>
+                        <th><i class="fas fa-dollar-sign"></i> Costo</th>
+                        <th><i class="fas fa-tag"></i> Precio Venta</th>
+                        <th><i class="fas fa-warehouse"></i> Stock</th>
+                        <th><i class="fas fa-cogs"></i> Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,40 +91,38 @@ export const renderProducts = (products) => {
         
         if (stock <= 0) {
             stockClass = 'badge-out-of-stock';
-            stockIcon = ' ⚠️';
+            stockIcon = ' <i class="fas fa-exclamation-circle"></i>';
             stockLabel = '0';
         } else if (stock < 5) {
             stockClass = 'badge-low-stock';
-            stockIcon = ' ⚡';
+            stockIcon = ' <i class="fas fa-bolt"></i>';
         }
         
-        const priceLabel = product.priceStr ? '💰 Personalizado' : '💡 Sugerido';
+        const priceLabel = product.priceStr ? '<i class="fas fa-user-edit"></i> Personalizado' : '<i class="fas fa-lightbulb"></i> Sugerido';
         
         let costDisplay = formatCurrency(product.cost);
         if (product.type === 'batch' && product.batchSize) {
             const costPerPiece = roundToTwo(product.cost / product.batchSize);
-            costDisplay += `<br><small style="color:var(--text-muted); font-size: 10px;">${formatCurrency(costPerPiece)} / pieza</small>`;
+            costDisplay += `<br><small style="color:var(--text-muted); font-size: 10px;"><i class="fas fa-cubes"></i> ${formatCurrency(costPerPiece)} / pieza</small>`;
         }
         
-        const nameWarning = stock <= 0 ? ' ⚠️' : '';
-        
-        // ✅ Mostrar categoría
+        const nameWarning = stock <= 0 ? ' <i class="fas fa-exclamation-triangle" style="color: #f56565;"></i>' : '';
         const categoriaDisplay = product.categoria 
-            ? `<span class="badge badge-info" style="font-size: 10px;">📂 ${product.categoria}</span>`
-            : `<span class="badge" style="font-size: 10px; background: var(--bg-secondary); color: var(--text-muted);">Sin categoría</span>`;
+            ? `<span class="badge badge-info" style="font-size: 10px;"><i class="fas fa-folder"></i> ${product.categoria}</span>`
+            : `<span class="badge" style="font-size: 10px; background: var(--bg-secondary); color: var(--text-muted);"><i class="fas fa-times"></i> Sin categoría</span>`;
         
         html += `
             <tr>
                 <td>
                     <strong>${product.name}${nameWarning}</strong>
                     ${product.description ? `<br><small style="color:var(--text-muted);">${product.description}</small>` : ''}
-                    ${stock <= 0 ? `<br><small style="color:#f56565; font-weight: bold;">🚫 AGOTADO</small>` : ''}
-                    ${stock > 0 && stock < 5 ? `<br><small style="color:#ed8936;">📦 Stock bajo (${stock} uds)</small>` : ''}
+                    ${stock <= 0 ? `<br><small style="color:#f56565; font-weight: bold;"><i class="fas fa-ban"></i> AGOTADO</small>` : ''}
+                    ${stock > 0 && stock < 5 ? `<br><small style="color:#ed8936;"><i class="fas fa-exclamation-triangle"></i> Stock bajo (${stock} uds)</small>` : ''}
                 </td>
                 <td>${categoriaDisplay}</td>
                 <td>
                     <span class="badge ${product.type === 'batch' ? 'badge-warning' : 'badge-info'}">
-                        ${product.type === 'batch' ? `📦 Lote (${product.batchSize} uds)` : '🔹 Pieza'}
+                        ${product.type === 'batch' ? `<i class="fas fa-boxes"></i> Lote (${product.batchSize} uds)` : '<i class="fas fa-cube"></i> Pieza'}
                     </span>
                 </td>
                 <td>${costDisplay}</td>
@@ -140,8 +134,12 @@ export const renderProducts = (products) => {
                     <span class="badge ${stockClass}">${stockLabel}${stockIcon}</span>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-primary" onclick="window.editProduct('${product.id}')">✏️</button>
-                    <button class="btn btn-sm btn-danger" onclick="window.deleteProductHandler('${product.id}')">🗑️</button>
+                    <button class="btn btn-sm btn-primary" onclick="window.editProduct('${product.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="window.deleteProductHandler('${product.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             </tr>
         `;
@@ -187,8 +185,8 @@ export const updateSalePrice = () => {
         if (detail) {
             const costPerPiece = type === 'batch' && batchSize > 0 ? roundToTwo(cost / batchSize) : cost;
             detail.innerHTML = type === 'batch' && batchSize > 0
-                ? `💡 Costo por pieza: ${formatCurrency(costPerPiece)} × 1.35 = ${formatCurrency(suggestedPrice)}`
-                : `💡 Costo: ${formatCurrency(cost)} × 1.35 = ${formatCurrency(suggestedPrice)}`;
+                ? `<i class="fas fa-cubes"></i> Costo por pieza: ${formatCurrency(costPerPiece)} × 1.35 = ${formatCurrency(suggestedPrice)}`
+                : `<i class="fas fa-calculator"></i> Costo: ${formatCurrency(cost)} × 1.35 = ${formatCurrency(suggestedPrice)}`;
         }
     } else {
         priceInput.value = '0.00';
@@ -196,7 +194,7 @@ export const updateSalePrice = () => {
         
         const detail = priceContainer?.querySelector('small');
         if (detail) {
-            detail.innerHTML = '💡 Ingresa el <strong>costo</strong> para ver el precio sugerido';
+            detail.innerHTML = '<i class="fas fa-lightbulb"></i> Ingresa el <strong>costo</strong> para ver el precio sugerido';
         }
     }
 };
@@ -219,18 +217,18 @@ export const applySuggestedPrice = () => {
     if (cost && cost > 0) {
         const suggestedPrice = calculateSalePrice(cost, type, batchSize);
         priceInput.value = suggestedPrice;
-        showNotification('💰 Precio sugerido aplicado: ' + formatCurrency(suggestedPrice), 'success');
+        showNotification(`<i class="fas fa-magic"></i> Precio sugerido aplicado: ${formatCurrency(suggestedPrice)}`, 'success');
     } else {
         showNotification('❌ Ingresa el costo primero', 'error');
     }
 };
 
 // ============================================
-// ACCIONES DE PRODUCTOS
+// ACCIONES DE PRODUCTOS (CORREGIDAS)
 // ============================================
 
 export const openAddProduct = () => {
-    document.getElementById('modalTitle').textContent = '➕ Agregar Producto';
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> Agregar Producto';
     document.getElementById('productForm').reset();
     document.getElementById('productId').value = '';
     document.getElementById('prodType').value = 'unit';
@@ -246,7 +244,7 @@ export const openAddProduct = () => {
     const priceContainer = document.getElementById('prodPriceContainer');
     const detail = priceContainer?.querySelector('small');
     if (detail) {
-        detail.innerHTML = '💡 Ingresa el <strong>costo</strong> para ver el precio sugerido';
+        detail.innerHTML = '<i class="fas fa-lightbulb"></i> Ingresa el <strong>costo</strong> para ver el precio sugerido';
     }
 };
 
@@ -256,15 +254,15 @@ export const editProduct = async (id) => {
         const product = products.find(p => p.id === id);
         
         if (!product) {
-            showNotification('Producto no encontrado', 'error');
+            showNotification('❌ Producto no encontrado', 'error');
             return;
         }
         
-        document.getElementById('modalTitle').textContent = '✏️ Editar Producto';
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Producto';
         document.getElementById('productId').value = product.id;
         document.getElementById('prodName').value = product.name;
         document.getElementById('prodDescription').value = product.description || '';
-        document.getElementById('prodCategory').value = product.categoria || ''; // ✅ NUEVO
+        document.getElementById('prodCategory').value = product.categoria || '';
         document.getElementById('prodType').value = product.type;
         document.getElementById('prodBatchSize').value = product.batchSize || '';
         document.getElementById('prodCost').value = product.cost;
@@ -288,13 +286,13 @@ export const editProduct = async (id) => {
         if (detail) {
             const costPerPiece = isBatch && product.batchSize ? roundToTwo(product.cost / product.batchSize) : product.cost;
             detail.innerHTML = isBatch && product.batchSize
-                ? `💡 Costo por pieza: ${formatCurrency(costPerPiece)} × 1.35 = ${formatCurrency(price)}`
-                : `💡 Costo: ${formatCurrency(product.cost)} × 1.35 = ${formatCurrency(price)}`;
+                ? `<i class="fas fa-cubes"></i> Costo por pieza: ${formatCurrency(costPerPiece)} × 1.35 = ${formatCurrency(price)}`
+                : `<i class="fas fa-calculator"></i> Costo: ${formatCurrency(product.cost)} × 1.35 = ${formatCurrency(price)}`;
         }
         
         document.getElementById('productModal').style.display = 'flex';
     } catch (error) {
-        showNotification('Error al cargar producto', 'error');
+        showNotification('❌ Error al cargar producto', 'error');
     }
 };
 
@@ -305,6 +303,6 @@ export const deleteProductHandler = async (id) => {
         await deleteProduct(id);
         showNotification('✅ Producto eliminado correctamente', 'success');
     } catch (error) {
-        showNotification('Error al eliminar producto', 'error');
+        showNotification('❌ Error al eliminar producto', 'error');
     }
 };

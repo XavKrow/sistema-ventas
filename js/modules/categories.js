@@ -25,9 +25,9 @@ export const renderCategories = (categories) => {
     if (!allCategories || allCategories.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <p>📂 No hay categorías registradas</p>
+                <p><i class="fas fa-folder-open"></i> No hay categorías registradas</p>
                 <button onclick="window.openAddCategory()" class="btn btn-primary">
-                    ➕ Agregar Categoría
+                    <i class="fas fa-plus"></i> Agregar Categoría
                 </button>
             </div>
         `;
@@ -39,11 +39,11 @@ export const renderCategories = (categories) => {
             <table>
                 <thead>
                     <tr>
-                        <th>Icono</th>
-                        <th>Nombre</th>
-                        <th>Color</th>
-                        <th>Productos</th>
-                        <th>Acciones</th>
+                        <th><i class="fas fa-smile"></i> Icono</th>
+                        <th><i class="fas fa-tag"></i> Nombre</th>
+                        <th><i class="fas fa-palette"></i> Color</th>
+                        <th><i class="fas fa-box"></i> Productos</th>
+                        <th><i class="fas fa-cogs"></i> Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,16 +55,20 @@ export const renderCategories = (categories) => {
         
         html += `
             <tr>
-                <td style="font-size: 24px;">${category.icon || '📦'}</td>
+                <td style="font-size: 24px; text-align: center;">${category.icon || '📦'}</td>
                 <td><strong>${category.name}</strong></td>
                 <td>
-                    <span style="display: inline-block; width: 20px; height: 20px; border-radius: 4px; background: ${category.color || '#a0aec0'};"></span>
-                    <span style="font-size: 12px; color: var(--text-muted);">${category.color || '#a0aec0'}</span>
+                    <span style="display: inline-block; width: 20px; height: 20px; border-radius: 4px; background: ${category.color || '#a0aec0'}; vertical-align: middle;"></span>
+                    <span style="font-size: 12px; color: var(--text-muted); margin-left: 5px;">${category.color || '#a0aec0'}</span>
                 </td>
-                <td>${productCount}</td>
+                <td><span class="badge badge-info">${productCount}</span></td>
                 <td>
-                    <button class="btn btn-sm btn-primary" onclick="window.editCategory('${category.id}')">✏️</button>
-                    <button class="btn btn-sm btn-danger" onclick="window.deleteCategoryHandler('${category.id}')">🗑️</button>
+                    <button class="btn btn-sm btn-primary" onclick="window.editCategory('${category.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="window.deleteCategoryHandler('${category.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             </tr>
         `;
@@ -83,7 +87,7 @@ export const renderCategoryOptions = (categories) => {
     const prodSelect = document.getElementById('prodCategory');
     if (prodSelect) {
         const currentValue = prodSelect.value;
-        prodSelect.innerHTML = '<option value="">Sin categoría</option>';
+        prodSelect.innerHTML = '<option value=""><i class="fas fa-times"></i> Sin categoría</option>';
         categories.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat.name;
@@ -97,7 +101,7 @@ export const renderCategoryOptions = (categories) => {
     const filterSelect = document.getElementById('filterCategory');
     if (filterSelect) {
         const currentValue = filterSelect.value;
-        filterSelect.innerHTML = '<option value="">📂 Todas las categorías</option>';
+        filterSelect.innerHTML = '<option value=""><i class="fas fa-folder"></i> Todas las categorías</option>';
         categories.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat.name;
@@ -113,7 +117,8 @@ export const renderCategoryOptions = (categories) => {
 // ============================================
 
 export const openAddCategory = () => {
-    document.getElementById('categoryModalTitle').textContent = '➕ Agregar Categoría';
+    // ✅ CORRECCIÓN: Cambiar textContent por innerHTML
+    document.getElementById('categoryModalTitle').innerHTML = '<i class="fas fa-plus"></i> Agregar Categoría';
     document.getElementById('categoryForm').reset();
     document.getElementById('categoryId').value = '';
     document.getElementById('categoryIcon').value = '📦';
@@ -129,11 +134,12 @@ export const editCategory = async (id) => {
         const category = categories.find(c => c.id === id);
         
         if (!category) {
-            showNotification('Categoría no encontrada', 'error');
+            showNotification('❌ Categoría no encontrada', 'error');
             return;
         }
         
-        document.getElementById('categoryModalTitle').textContent = '✏️ Editar Categoría';
+        // ✅ CORRECCIÓN: Cambiar textContent por innerHTML
+        document.getElementById('categoryModalTitle').innerHTML = '<i class="fas fa-edit"></i> Editar Categoría';
         document.getElementById('categoryId').value = category.id;
         document.getElementById('categoryName').value = category.name;
         document.getElementById('categoryIcon').value = category.icon || '📦';
@@ -142,7 +148,7 @@ export const editCategory = async (id) => {
         document.getElementById('categoryModal').style.display = 'flex';
         document.getElementById('categoryName').focus();
     } catch (error) {
-        showNotification('Error al cargar categoría', 'error');
+        showNotification('❌ Error al cargar categoría', 'error');
     }
 };
 
@@ -153,7 +159,7 @@ export const deleteCategoryHandler = async (id) => {
         await deleteCategory(id);
         showNotification('✅ Categoría eliminada correctamente', 'success');
     } catch (error) {
-        showNotification('Error al eliminar categoría', 'error');
+        showNotification('❌ Error al eliminar categoría', 'error');
     }
 };
 

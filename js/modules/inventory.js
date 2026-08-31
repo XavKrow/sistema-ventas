@@ -35,15 +35,17 @@ export const renderInventory = (products) => {
     
     const countEl = document.getElementById('inventoryCount');
     if (countEl) {
-        countEl.textContent = filteredProducts.length === allInventoryProducts.length 
-            ? `📊 ${allInventoryProducts.length} productos` 
-            : `📊 ${filteredProducts.length} de ${allInventoryProducts.length} productos`;
+        if (filteredProducts.length === allInventoryProducts.length) {
+            countEl.innerHTML = `<i class="fas fa-boxes"></i> ${allInventoryProducts.length} productos`;
+        } else {
+            countEl.innerHTML = `<i class="fas fa-filter"></i> ${filteredProducts.length} de ${allInventoryProducts.length} productos`;
+        }
     }
     
     if (!filteredProducts || filteredProducts.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
-                <p>${allInventoryProducts.length > 0 ? '🔍 No se encontraron productos' : '📊 No hay productos en inventario'}</p>
+                <p>${allInventoryProducts.length > 0 ? '<i class="fas fa-search"></i> No se encontraron productos' : '<i class="fas fa-boxes"></i> No hay productos en inventario'}</p>
             </div>
         `;
         return;
@@ -54,11 +56,11 @@ export const renderInventory = (products) => {
             <table>
                 <thead>
                     <tr>
-                        <th>Producto</th>
-                        <th>Tipo</th>
-                        <th>Stock</th>
-                        <th>Valor Inventario</th>
-                        <th>Acciones</th>
+                        <th><i class="fas fa-tag"></i> Producto</th>
+                        <th><i class="fas fa-box"></i> Tipo</th>
+                        <th><i class="fas fa-warehouse"></i> Stock</th>
+                        <th><i class="fas fa-dollar-sign"></i> Valor Inventario</th>
+                        <th><i class="fas fa-cogs"></i> Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,37 +75,41 @@ export const renderInventory = (products) => {
         let stockIcon = '';
         if (stock <= 0) {
             stockClass = 'badge-out-of-stock';
-            stockIcon = ' ⚠️';
+            stockIcon = ' <i class="fas fa-exclamation-circle"></i>';
         } else if (stock < 5) {
             stockClass = 'badge-low-stock';
-            stockIcon = ' ⚡';
+            stockIcon = ' <i class="fas fa-bolt"></i>';
         }
         
         html += `
             <tr>
                 <td>
                     <strong>${product.name}</strong>
-                    ${stock <= 0 ? `<br><small style="color:#f56565;">🚫 AGOTADO</small>` : ''}
-                    ${stock > 0 && stock < 5 ? `<br><small style="color:#ed8936;">📦 Stock bajo</small>` : ''}
-                    ${product.type === 'batch' ? `<br><small style="color:var(--text-muted); font-size: 10px;">Lote: ${product.batchSize} uds | ${formatCurrency(costPerPiece)} / pieza</small>` : ''}
+                    ${stock <= 0 ? `<br><small style="color:#f56565;"><i class="fas fa-ban"></i> AGOTADO</small>` : ''}
+                    ${stock > 0 && stock < 5 ? `<br><small style="color:#ed8936;"><i class="fas fa-exclamation-triangle"></i> Stock bajo</small>` : ''}
+                    ${product.type === 'batch' ? `<br><small style="color:var(--text-muted); font-size: 10px;"><i class="fas fa-cubes"></i> Lote: ${product.batchSize} uds | ${formatCurrency(costPerPiece)} / pieza</small>` : ''}
                 </td>
                 <td>
                     <span class="badge ${product.type === 'batch' ? 'badge-warning' : 'badge-info'}">
-                        ${product.type === 'batch' ? `📦 Lote (${product.batchSize} uds)` : '🔹 Pieza'}
+                        ${product.type === 'batch' ? `<i class="fas fa-boxes"></i> Lote (${product.batchSize} uds)` : '<i class="fas fa-cube"></i> Pieza'}
                     </span>
                 </td>
                 <td>
                     <span class="badge ${stockClass}" style="font-size: 1.1em;">${stock}${stockIcon}</span>
                 </td>
                 <td>
-                    <strong style="color:#48bb78;">${formatCurrency(value)}</strong>
+                    <strong style="color:#48bb78;"><i class="fas fa-dollar-sign"></i> ${formatCurrency(value)}</strong>
                     <br><small style="color:var(--text-muted); font-size: 10px;">
-                        ${stock} × ${formatCurrency(costPerPiece)} = ${formatCurrency(value)}
+                        <i class="fas fa-calculator"></i> ${stock} × ${formatCurrency(costPerPiece)} = ${formatCurrency(value)}
                     </small>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-success" onclick="window.openInventoryModal('${product.id}', 'add')">➕</button>
-                    <button class="btn btn-sm btn-danger" onclick="window.openInventoryModal('${product.id}', 'subtract')">➖</button>
+                    <button class="btn btn-sm btn-success" onclick="window.openInventoryModal('${product.id}', 'add')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="window.openInventoryModal('${product.id}', 'subtract')">
+                        <i class="fas fa-minus"></i>
+                    </button>
                 </td>
             </tr>
         `;
@@ -133,18 +139,22 @@ export const openInventoryModal = (productId, operation) => {
     getProducts().then(products => {
         const product = products.find(p => p.id === productId);
         if (!product) {
-            showNotification('Producto no encontrado', 'error');
+            showNotification('❌ Producto no encontrado', 'error');
             return;
         }
         
-        document.getElementById('inventoryProductName').textContent = `📦 ${product.name}`;
+        // ✅ CORRECCIÓN: Usar innerHTML en lugar de textContent para mostrar los íconos
+        document.getElementById('inventoryProductName').innerHTML = `<i class="fas fa-box"></i> ${product.name}`;
         document.getElementById('inventoryCurrentStock').textContent = product.stock || 0;
         document.getElementById('inventoryQuantity').value = 1;
         document.getElementById('inventoryMessage').textContent = '';
         document.getElementById('inventoryMessage').style.color = 'var(--text-primary)';
         
-        const title = operation === 'add' ? '➕ Agregar Stock' : '➖ Restar Stock';
-        document.getElementById('inventoryModalTitle').textContent = title;
+        // ✅ CORRECCIÓN: Usar innerHTML en lugar de textContent para mostrar los íconos
+        const title = operation === 'add' 
+            ? '<i class="fas fa-plus"></i> Agregar Stock' 
+            : '<i class="fas fa-minus"></i> Restar Stock';
+        document.getElementById('inventoryModalTitle').innerHTML = title;
         
         document.getElementById('inventoryModal').style.display = 'flex';
         document.getElementById('inventoryQuantity').focus();
@@ -166,7 +176,7 @@ export const confirmInventoryAdjust = async () => {
         const products = await getProducts();
         const product = products.find(p => p.id === inventoryProductId);
         if (!product) {
-            showNotification('Producto no encontrado', 'error');
+            showNotification('❌ Producto no encontrado', 'error');
             return;
         }
         
