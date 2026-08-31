@@ -2,8 +2,28 @@
 // GESTIÓN DE VENTAS
 // ============================================
 
-import { getProducts, getSales, saveSale, saveMultiSale, undoSale, saveInventoryMovement, listenSales } from '../firebase-config.js';
-import { formatCurrency, roundToTwo, formatDate, showNotification, getPriceAsNumber, calculateSalePrice } from './utils.js';
+import { 
+    getProducts, 
+    getSales, 
+    saveSale, 
+    saveMultiSale, 
+    undoSale, 
+    saveInventoryMovement, 
+    listenSales,
+    saveProduct
+} from '../firebase-config.js';
+
+import { 
+    formatCurrency, 
+    roundToTwo, 
+    formatDate, 
+    showNotification, 
+    getPriceAsNumber, 
+    calculateSalePrice 
+} from './utils.js';
+
+// ✅ IMPORTAR updateFinancialPanel
+import { updateFinancialPanel } from './finances.js';
 
 // ============================================
 // VARIABLES GLOBALES (de este módulo)
@@ -182,12 +202,15 @@ export const registerSale = async () => {
         });
         
         showNotification(`✅ Venta registrada: ${product.name} x${quantity} = ${formatCurrency(sale.totalPrice)}`, 'success');
+        
+        // ✅ AHORA SÍ FUNCIONA PORQUE ESTÁ IMPORTADO
         await updateFinancialPanel();
         
         document.getElementById('saleProduct').value = '';
         document.getElementById('saleQuantity').value = '';
         document.getElementById('salePrice').value = '';
         document.getElementById('saleTotal').value = '';
+        
     } catch (error) {
         console.error(error);
         showNotification('❌ Error al registrar venta', 'error');
@@ -457,6 +480,9 @@ export const confirmMultiSale = async () => {
         document.getElementById('multiSaleModal').style.display = 'none';
         showNotification(`✅ Venta registrada: ${formatCurrency(subtotal)}`, 'success');
         
+        // ✅ ACTUALIZAR PANEL FINANCIERO
+        await updateFinancialPanel();
+        
     } catch (error) {
         messageEl.textContent = '❌ Error al registrar venta';
         messageEl.style.color = '#f56565';
@@ -473,6 +499,7 @@ export const undoSaleHandler = async (saleId) => {
     try {
         await undoSale(saleId);
         showNotification('✅ Venta deshecha correctamente', 'success');
+        await updateFinancialPanel();
     } catch (error) {
         showNotification('❌ Error al deshacer venta', 'error');
     }
