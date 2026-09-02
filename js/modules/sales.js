@@ -203,7 +203,6 @@ export const registerSale = async () => {
         
         showNotification(`✅ Venta registrada: ${product.name} x${quantity} = ${formatCurrency(sale.totalPrice)}`, 'success');
         
-        // ✅ AHORA SÍ FUNCIONA PORQUE ESTÁ IMPORTADO
         await updateFinancialPanel();
         
         document.getElementById('saleProduct').value = '';
@@ -480,7 +479,6 @@ export const confirmMultiSale = async () => {
         document.getElementById('multiSaleModal').style.display = 'none';
         showNotification(`✅ Venta registrada: ${formatCurrency(subtotal)}`, 'success');
         
-        // ✅ ACTUALIZAR PANEL FINANCIERO
         await updateFinancialPanel();
         
     } catch (error) {
@@ -490,17 +488,90 @@ export const confirmMultiSale = async () => {
 };
 
 // ============================================
-// DESHACER VENTA
+// DESHACER VENTA (CON RESTAURACIÓN DE STOCK)
 // ============================================
 
 export const undoSaleHandler = async (saleId) => {
     if (!confirm('¿Estás seguro de deshacer esta venta?\nSe devolverá el stock de todos los productos.')) return;
     
     try {
+        // 1. Obtener la venta que se va a deshacer
+        const sales = await getSales();
+        const sale = sales.find(s => s.id === saleId);
+        
+        if (!sale) {
+            showNotification('❌ Venta no encontrada', 'error');
+            return;
+        }
+        
+        // 2. Obtener todos los productos
+        const products = await getProducts();
+        
+        // 3. ✅ RESTAURAR STOCK para cada producto en la venta
+        if (sale.items && Array.isArray(sale.items)) {
+            // Venta múltiple
+            for (const item of sale.items) {
+                const product = products.find(p => p.id === item.productId);
+                if (product) {
+                    product.stock = (product.stock || 0) + item.quantity;
+                    await saveProduct(product, product.id);
+                    
+                    // Registrar movimiento de inventario (restaurar stock)
+                    await saveInventoryMovement({
+                        productId: product.id,
+                        productName: product.name,
+                        quantity: item.quantity,
+                        operation: 'add',
+                        timestamp: new Date().toISOString(),
+                        user: currentUser?.email || 'Sistema',
+                        note: `Deshacer venta (${saleId})`
+                    });
+                }
+            }
+        } else if (sale.productId) {
+            // Venta simple
+            const product = products.find(p => p.id === sale.productId);
+            if (product) {
+                product.stock = (product.stock || 0) + (sale.quantity || 0);
+                await saveProduct(product, product.id);
+                
+                // Registrar movimiento de inventario (restaurar stock)
+                await saveInventoryMovement({
+                    productId: product.id,
+                    productName: product.name,
+                    quantity: sale.quantity || 0,
+                    operation: 'add',
+                    timestamp: new Date().toISOString(),
+                    user: currentUser?.email || 'Sistema',
+                    note: `Deshacer venta (${saleId})`
+                });
+            }
+        }
+        
+        // 4. Eliminar la venta de la base de datos
         await undoSale(saleId);
-        showNotification('✅ Venta deshecha correctamente', 'success');
+        
+        // 5. Actualizar la interfaz
         await updateFinancialPanel();
+        
+        // 6. Recargar productos y ventas
+        const updatedProducts = await getProducts();
+        if (window.renderProducts) {
+            window.renderProducts(updatedProducts);
+        }
+        if (window.renderInventory) {
+            window.renderInventory(updatedProducts);
+        }
+        
+        // 7. Recargar ventas
+        const updatedSales = await getSales();
+        renderSales(updatedSales);
+        updateSalesSummary(updatedSales);
+        
+        showNotification('✅ Venta deshecha y stock restaurado correctamente', 'success');
+        
     } catch (error) {
+        console.error('Error al deshacer venta:', error);
         showNotification('❌ Error al deshacer venta', 'error');
     }
 };
