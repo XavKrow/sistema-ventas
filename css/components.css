@@ -113,7 +113,120 @@
     margin: 0 2px;
 }
 
-/* ===== BADGES ===== */
+/* ============================================
+   BOTONES DE EXPORTACIÓN (PDF y CSV)
+   ============================================ */
+
+.btn-print {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.btn-print:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: #fff;
+}
+
+.btn-print:active {
+    transform: translateY(0);
+}
+
+.btn-excel {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.btn-excel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    color: #fff;
+}
+
+.btn-excel:active {
+    transform: translateY(0);
+}
+
+.btn-excel i,
+.btn-print i {
+    font-size: 16px;
+}
+
+/* ============================================
+   MODO OSCURO - BOTONES DE EXPORTACIÓN
+   ============================================ */
+
+[data-theme="dark"] .btn-print {
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+}
+
+[data-theme="dark"] .btn-print:hover {
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+}
+
+[data-theme="dark"] .btn-excel {
+    background: linear-gradient(135deg, #1e7e34, #1a9b7a);
+}
+
+[data-theme="dark"] .btn-excel:hover {
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.5);
+}
+
+/* ============================================
+   RESPONSIVE - BOTONES DE EXPORTACIÓN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .btn-print,
+    .btn-excel {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+    .btn-print i,
+    .btn-excel i {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-print,
+    .btn-excel {
+        padding: 8px 12px;
+        font-size: 12px;
+        flex: 1;
+        justify-content: center;
+        min-width: 70px;
+    }
+    .btn-print i,
+    .btn-excel i {
+        font-size: 13px;
+    }
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
 .badge {
     display: inline-block;
     padding: 3px 12px;
@@ -197,7 +310,10 @@
     box-shadow: 0 2px 15px rgba(102, 126, 234, 0.3);
 }
 
-/* ===== RESPONSIVE ===== */
+/* ============================================
+   RESPONSIVE GENERAL
+   ============================================ */
+
 @media (max-width: 768px) {
     .theme-toggle {
         width: 100%;

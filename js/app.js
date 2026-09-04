@@ -25,6 +25,18 @@ import { showNotification, roundToTwo } from './modules/utils.js';
 import { updateStats } from './modules/stats.js';
 import { renderCategories, openAddCategory, editCategory, deleteCategoryHandler, updateCategories, renderCategoryOptions } from './modules/categories.js';
 
+// ✅ IMPORTAR MÓDULO DE EXPORTACIÓN
+import './modules/export.js';
+// ✅ O IMPORTAR FUNCIONES ESPECÍFICAS
+import { 
+    printToPDF,
+    exportProductsToCSV,
+    exportInventoryToCSV,
+    exportSalesToCSV,
+    exportFinancesToCSV,
+    exportToCSV
+} from './modules/export.js';
+
 // ============================================
 // VARIABLES GLOBALES
 // ============================================
@@ -40,12 +52,20 @@ window.currentUser = null;
 // FUNCIONES GLOBALES (para window)
 // ============================================
 
+// === Funciones de Productos ===
 window.openAddProduct = openAddProduct;
 window.editProduct = editProduct;
 window.deleteProductHandler = deleteProductHandler;
+window.applySuggestedPrice = applySuggestedPrice;
+window.updateSalePrice = updateSalePrice;
+window.filterByCategory = filterByCategory;
+
+// === Funciones de Inventario ===
 window.openInventoryModal = openInventoryModal;
 window.confirmInventoryAdjust = confirmInventoryAdjust;
 window.closeInventoryModal = closeInventoryModal;
+
+// === Funciones de Ventas ===
 window.registerSale = registerSale;
 window.calculateSaleTotal = calculateSaleTotal;
 window.loadProductPrice = loadProductPrice;
@@ -54,17 +74,28 @@ window.addItemToSale = addItemToSale;
 window.removeItemFromSale = removeItemFromSale;
 window.confirmMultiSale = confirmMultiSale;
 window.undoSaleHandler = undoSaleHandler;
+
+// === Funciones de Finanzas ===
 window.openWithdrawModal = openWithdrawModal;
 window.confirmWithdraw = confirmWithdraw;
 window.undoWithdrawalHandler = undoWithdrawalHandler;
-window.applySuggestedPrice = applySuggestedPrice;
-window.updateSalePrice = updateSalePrice;
+
+// === Funciones de Estadísticas ===
 window.updateStats = updateStats;
-window.filterByCategory = filterByCategory;
+
+// === Funciones de Categorías ===
 window.openAddCategory = openAddCategory;
 window.editCategory = editCategory;
 window.deleteCategoryHandler = deleteCategoryHandler;
 window.updateCategories = updateCategories;
+
+// ✅ FUNCIONES DE EXPORTACIÓN (PDF y CSV)
+window.printToPDF = printToPDF;
+window.exportProductsToCSV = exportProductsToCSV;
+window.exportInventoryToCSV = exportInventoryToCSV;
+window.exportSalesToCSV = exportSalesToCSV;
+window.exportFinancesToCSV = exportFinancesToCSV;
+window.exportToCSV = exportToCSV;
 
 // ============================================
 // INICIALIZACIÓN
@@ -416,3 +447,8 @@ console.log('  - window.openAddCategory()');
 console.log('  - window.editCategory(id)');
 console.log('  - window.deleteCategoryHandler(id)');
 console.log('  - window.updateCategories()');
+console.log('  - ✅ window.printToPDF(elementId, title)');
+console.log('  - ✅ window.exportProductsToCSV()');
+console.log('  - ✅ window.exportInventoryToCSV()');
+console.log('  - ✅ window.exportSalesToCSV()');
+console.log('  - ✅ window.exportFinancesToCSV()');

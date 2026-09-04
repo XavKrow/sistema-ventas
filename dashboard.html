@@ -89,9 +89,19 @@
             <div id="products" class="tab-panel active">
                 <div class="section-header">
                     <h2><i class="fas fa-box"></i> Gestión de Productos</h2>
-                    <button onclick="window.openAddProduct()" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Agregar Producto
-                    </button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <!-- ✅ PDF -->
+                        <button onclick="window.printToPDF('productList', 'Lista de Productos')" class="btn btn-print">
+                            <i class="fas fa-print"></i> PDF
+                        </button>
+                        <!-- ✅ CSV -->
+                        <button onclick="window.exportProductsToCSV()" class="btn btn-excel">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                        <button onclick="window.openAddProduct()" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Agregar Producto
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="search-container">
@@ -118,9 +128,19 @@
             <div id="inventory" class="tab-panel">
                 <div class="section-header">
                     <h2><i class="fas fa-clipboard-list"></i> Control de Inventario</h2>
-                    <button onclick="window.location.reload()" class="btn btn-primary">
-                        <i class="fas fa-sync"></i> Actualizar
-                    </button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <!-- ✅ PDF -->
+                        <button onclick="window.printToPDF('inventoryList', 'Inventario')" class="btn btn-print">
+                            <i class="fas fa-print"></i> PDF
+                        </button>
+                        <!-- ✅ CSV -->
+                        <button onclick="window.exportInventoryToCSV()" class="btn btn-excel">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                        <button onclick="window.location.reload()" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Actualizar
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="search-container">
@@ -146,9 +166,19 @@
                 <div class="sales-section">
                     <div class="section-header">
                         <h2><i class="fas fa-money-bill-wave"></i> Registrar Venta</h2>
-                        <button id="openMultiSaleBtn" class="btn btn-primary">
-                            <i class="fas fa-shopping-cart"></i> Venta Múltiple
-                        </button>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <!-- ✅ PDF -->
+                            <button onclick="window.printToPDF('salesList', 'Ventas')" class="btn btn-print">
+                                <i class="fas fa-print"></i> PDF
+                            </button>
+                            <!-- ✅ CSV -->
+                            <button onclick="window.exportSalesToCSV()" class="btn btn-excel">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                            <button id="openMultiSaleBtn" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart"></i> Venta Múltiple
+                            </button>
+                        </div>
                     </div>
                     <div class="sales-form">
                         <div class="form-group">
@@ -219,9 +249,19 @@
             <div id="finances" class="tab-panel">
                 <div class="section-header">
                     <h2><i class="fas fa-coins"></i> Historial de Retiros</h2>
-                    <button onclick="window.location.reload()" class="btn btn-primary">
-                        <i class="fas fa-sync"></i> Actualizar
-                    </button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <!-- ✅ PDF -->
+                        <button onclick="window.printToPDF('withdrawalsList', 'Historial de Retiros')" class="btn btn-print">
+                            <i class="fas fa-print"></i> PDF
+                        </button>
+                        <!-- ✅ CSV -->
+                        <button onclick="window.exportFinancesToCSV()" class="btn btn-excel">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                        <button onclick="window.location.reload()" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Actualizar
+                        </button>
+                    </div>
                 </div>
                 <div id="withdrawalsList" class="table-container">
                     <div class="empty-state">
@@ -291,9 +331,15 @@
             <div id="categories" class="tab-panel">
                 <div class="section-header">
                     <h2><i class="fas fa-folder"></i> Gestión de Categorías</h2>
-                    <button onclick="window.openAddCategory()" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Agregar Categoría
-                    </button>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <!-- ✅ PDF -->
+                        <button onclick="window.printToPDF('categoriesList', 'Categorías')" class="btn btn-print">
+                            <i class="fas fa-print"></i> PDF
+                        </button>
+                        <button onclick="window.openAddCategory()" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Agregar Categoría
+                        </button>
+                    </div>
                 </div>
                 <div id="categoriesList" class="table-container">
                     <div class="empty-state">
