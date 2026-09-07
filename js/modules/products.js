@@ -12,6 +12,7 @@ import { formatCurrency, roundToTwo, showNotification, getPriceAsNumber, calcula
 let allProducts = [];
 let currentFilter = '';
 let currentCategoryFilter = '';
+let currentStockFilter = 'all'; // 'all', 'inStock', 'lowStock', 'outOfStock'
 
 // ============================================
 // RENDERIZAR PRODUCTOS CON FILTRO
@@ -23,8 +24,12 @@ export const renderProducts = (products) => {
     
     allProducts = products || [];
     
+    // ✅ Ordenar productos por nombre (alfabético)
+    allProducts.sort((a, b) => a.name.localeCompare(b.name));
+    
     let filteredProducts = allProducts;
     
+    // Filtro por búsqueda
     if (currentFilter) {
         const searchTerm = currentFilter.toLowerCase().trim();
         filteredProducts = filteredProducts.filter(product => 
@@ -33,17 +38,29 @@ export const renderProducts = (products) => {
         );
     }
     
+    // Filtro por categoría
     if (currentCategoryFilter) {
         filteredProducts = filteredProducts.filter(product => 
             product.categoria === currentCategoryFilter
         );
     }
     
+    // ✅ Filtro por stock
+    if (currentStockFilter !== 'all') {
+        filteredProducts = filteredProducts.filter(product => {
+            const stock = product.stock || 0;
+            if (currentStockFilter === 'inStock') return stock > 0;
+            if (currentStockFilter === 'lowStock') return stock > 0 && stock < 5;
+            if (currentStockFilter === 'outOfStock') return stock === 0;
+            return true;
+        });
+    }
+    
     const countEl = document.getElementById('productCount');
     if (countEl) {
         const totalProductos = allProducts.length;
         const mostrados = filteredProducts.length;
-        if (currentFilter || currentCategoryFilter) {
+        if (currentFilter || currentCategoryFilter || currentStockFilter !== 'all') {
             countEl.innerHTML = `<i class="fas fa-filter"></i> ${mostrados} de ${totalProductos} productos`;
         } else {
             countEl.innerHTML = `<i class="fas fa-box"></i> ${totalProductos} productos`;
@@ -51,10 +68,34 @@ export const renderProducts = (products) => {
     }
     
     if (!filteredProducts || filteredProducts.length === 0) {
+        let message = '';
+        let button = '';
+        
+        if (allProducts.length === 0) {
+            message = '<i class="fas fa-box-open"></i> No hay productos registrados';
+            button = `<button onclick="window.openAddProduct()" class="btn btn-primary"><i class="fas fa-plus"></i> Agregar Producto</button>`;
+        } else if (currentFilter) {
+            message = `<i class="fas fa-search"></i> No se encontraron productos con "<strong>${currentFilter}</strong>"`;
+            button = `<button onclick="window.filterProducts('')" class="btn btn-secondary"><i class="fas fa-undo"></i> Limpiar búsqueda</button>`;
+        } else if (currentCategoryFilter) {
+            message = `<i class="fas fa-folder"></i> No hay productos en la categoría "<strong>${currentCategoryFilter}</strong>"`;
+            button = `<button onclick="window.filterByCategory('')" class="btn btn-secondary"><i class="fas fa-undo"></i> Ver todas</button>`;
+        } else if (currentStockFilter !== 'all') {
+            const stockLabels = {
+                'inStock': 'en stock',
+                'lowStock': 'con stock bajo',
+                'outOfStock': 'agotados'
+            };
+            message = `<i class="fas fa-warehouse"></i> No hay productos ${stockLabels[currentStockFilter] || 'con este filtro'}`;
+            button = `<button onclick="window.filterByStock('all')" class="btn btn-secondary"><i class="fas fa-undo"></i> Ver todos</button>`;
+        } else {
+            message = '<i class="fas fa-box-open"></i> No hay productos que coincidan con los filtros';
+        }
+        
         container.innerHTML = `
             <div class="empty-state">
-                <p>${allProducts.length > 0 ? '<i class="fas fa-search"></i> No se encontraron productos' : '<i class="fas fa-box-open"></i> No hay productos registrados'}</p>
-                ${allProducts.length === 0 ? `<button onclick="window.openAddProduct()" class="btn btn-primary"><i class="fas fa-plus"></i> Agregar Producto</button>` : ''}
+                <p>${message}</p>
+                ${button}
             </div>
         `;
         return;
@@ -163,6 +204,12 @@ export const filterByCategory = (category) => {
     renderProducts(allProducts);
 };
 
+// ✅ NUEVO: Filtrar por stock
+export const filterByStock = (filter) => {
+    currentStockFilter = filter;
+    renderProducts(allProducts);
+};
+
 // ============================================
 // ACTUALIZAR PRECIO SUGERIDO
 // ============================================
@@ -224,7 +271,7 @@ export const applySuggestedPrice = () => {
 };
 
 // ============================================
-// ACCIONES DE PRODUCTOS (CORREGIDAS)
+// ACCIONES DE PRODUCTOS
 // ============================================
 
 export const openAddProduct = () => {
@@ -297,12 +344,62 @@ export const editProduct = async (id) => {
 };
 
 export const deleteProductHandler = async (id) => {
+    // ✅ Verificar si el producto tiene stock antes de eliminar
+    const product = allProducts.find(p => p.id === id);
+    if (product && (product.stock || 0) > 0) {
+        if (!confirm(`⚠️ El producto "${product.name}" tiene ${product.stock} unidades en stock.\n¿Estás seguro de eliminarlo?`)) {
+            return;
+        }
+    }
+    
     if (!confirm('¿Estás seguro de eliminar este producto?\nEsta acción no se puede deshacer.')) return;
     
     try {
         await deleteProduct(id);
         showNotification('✅ Producto eliminado correctamente', 'success');
+        
+        // ✅ Recargar lista de productos después de eliminar
+        const products = await getProducts();
+        renderProducts(products);
+        
     } catch (error) {
         showNotification('❌ Error al eliminar producto', 'error');
     }
 };
+
+// ============================================
+// EXPORTAR PRODUCTOS A CSV
+// ============================================
+
+export const exportProductsToCSV = () => {
+    if (!allProducts || allProducts.length === 0) {
+        showNotification('❌ No hay productos para exportar', 'error');
+        return;
+    }
+    
+    // Usar la función global de exportación si existe
+    if (window.exportToCSV) {
+        const headers = ['Producto', 'Categoría', 'Tipo', 'Costo', 'Precio Venta', 'Stock', 'Valor Inventario'];
+        const data = allProducts.map(p => ({
+            'Producto': p.name,
+            'Categoría': p.categoria || 'Sin categoría',
+            'Tipo': p.type === 'batch' ? `Lote (${p.batchSize} uds)` : 'Pieza',
+            'Costo': p.cost || 0,
+            'Precio Venta': getPriceAsNumber(p) || 0,
+            'Stock': p.stock || 0,
+            'Valor Inventario': (p.stock || 0) * (p.type === 'batch' && p.batchSize ? roundToTwo(p.cost / p.batchSize) : p.cost)
+        }));
+        window.exportToCSV(data, `productos_${new Date().toISOString().slice(0,10)}`, headers);
+    } else {
+        showNotification('❌ Módulo de exportación no disponible', 'error');
+    }
+};
+
+// ============================================
+// REGISTRAR FUNCIONES EN window
+// ============================================
+
+window.filterProducts = filterProducts;
+window.filterByCategory = filterByCategory;
+window.filterByStock = filterByStock;
+window.exportProductsToCSV = exportProductsToCSV;

@@ -33,6 +33,17 @@ let saleItems = [];
 let currentUser = null;
 
 // ============================================
+// VARIABLES PARA FILTRO DE VENTAS
+// ============================================
+
+let allSalesData = [];
+let currentSalesFilter = { from: null, to: null };
+let isFilterActive = false;
+
+// ✅ Inicializar window.allSalesData
+window.allSalesData = allSalesData;
+
+// ============================================
 // RENDERIZAR VENTAS
 // ============================================
 
@@ -93,7 +104,11 @@ export const renderSales = (sales) => {
                 <tbody>
     `;
     
-    salesOrdenadas.slice(0, 50).forEach(sale => {
+    // Mostrar hasta 500 ventas (o todas si son menos)
+    const maxVentas = 500;
+    const ventasAMostrar = salesOrdenadas.slice(0, maxVentas);
+    
+    ventasAMostrar.forEach(sale => {
         let productsList = '';
         let totalItems = 0;
         
@@ -136,11 +151,12 @@ export const renderSales = (sales) => {
         `;
     });
     
-    if (sales.length > 50) {
+    if (sales.length > maxVentas) {
         html += `
             <tr>
                 <td colspan="6" style="text-align:center; color:var(--text-muted);">
-                    <i class="fas fa-info-circle"></i> Mostrando 50 de ${sales.length} ventas
+                    <i class="fas fa-info-circle"></i> Mostrando ${maxVentas} de ${sales.length} ventas
+                    <br><small>💡 Usa el filtro por fechas o descarga el CSV para ver todas</small>
                 </td>
             </tr>
         `;
@@ -209,6 +225,9 @@ export const registerSale = async () => {
         document.getElementById('saleQuantity').value = '';
         document.getElementById('salePrice').value = '';
         document.getElementById('saleTotal').value = '';
+        
+        // ✅ Recargar ventas para actualizar la lista
+        await loadSales();
         
     } catch (error) {
         console.error(error);
@@ -481,6 +500,9 @@ export const confirmMultiSale = async () => {
         
         await updateFinancialPanel();
         
+        // ✅ Recargar ventas para actualizar la lista
+        await loadSales();
+        
     } catch (error) {
         messageEl.textContent = '❌ Error al registrar venta';
         messageEl.style.color = '#f56565';
@@ -564,9 +586,7 @@ export const undoSaleHandler = async (saleId) => {
         }
         
         // 7. Recargar ventas
-        const updatedSales = await getSales();
-        renderSales(updatedSales);
-        updateSalesSummary(updatedSales);
+        await loadSales();
         
         showNotification('✅ Venta deshecha y stock restaurado correctamente', 'success');
         
@@ -625,9 +645,344 @@ export const updateSalesSummary = (sales) => {
 };
 
 // ============================================
+// FUNCIONES DE FILTRO POR FECHA (MEJORADAS)
+// ============================================
+
+/**
+ * Obtiene la fecha de una venta en formato Date
+ * Maneja TODOS los formatos posibles de Firebase
+ */
+const getSaleDate = (sale) => {
+    let date = null;
+    
+    // Lista de campos que pueden contener la fecha
+    const camposFecha = ['createdAt', 'saleDate', 'fecha', 'date', 'timestamp'];
+    
+    for (const campo of camposFecha) {
+        if (sale[campo] !== undefined && sale[campo] !== null) {
+            const valor = sale[campo];
+            
+            // 1. Firebase Timestamp con toDate()
+            if (typeof valor === 'object' && valor !== null && typeof valor.toDate === 'function') {
+                try {
+                    date = valor.toDate();
+                    break;
+                } catch (e) {
+                    // Si falla, continuar
+                }
+            }
+            
+            // 2. Firebase Timestamp con seconds (serializado)
+            if (typeof valor === 'object' && valor !== null && valor.seconds !== undefined) {
+                try {
+                    date = new Date(valor.seconds * 1000);
+                    break;
+                } catch (e) {
+                    // Si falla, continuar
+                }
+            }
+            
+            // 3. String ISO
+            if (typeof valor === 'string') {
+                try {
+                    const parsed = new Date(valor);
+                    if (!isNaN(parsed.getTime())) {
+                        date = parsed;
+                        break;
+                    }
+                } catch (e) {
+                    // Si falla, continuar
+                }
+            }
+            
+            // 4. Número (timestamp en milisegundos)
+            if (typeof valor === 'number') {
+                try {
+                    date = new Date(valor);
+                    if (!isNaN(date.getTime())) {
+                        break;
+                    }
+                } catch (e) {
+                    // Si falla, continuar
+                }
+            }
+        }
+    }
+    
+    // Si no se encontró fecha, usar fecha actual como fallback
+    if (!date || isNaN(date.getTime())) {
+        console.warn('⚠️ No se pudo obtener fecha para la venta:', sale.id);
+        return new Date(0);
+    }
+    
+    // ✅ Normalizar a fecha local (sin hora)
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    return new Date(year, month, day);
+};
+
+/**
+ * Formatea una fecha para mostrar en el mensaje de filtro
+ * Convierte YYYY-MM-DD a formato legible en español
+ */
+const formatDateForFilter = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    return date.toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+};
+
+/**
+ * Formatea una fecha para input type="date" (YYYY-MM-DD)
+ */
+const formatDateInput = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+/**
+ * Aplica el filtro de fechas a las ventas
+ */
+export const filterSalesByDate = (fromDate, toDate) => {
+    currentSalesFilter.from = fromDate;
+    currentSalesFilter.to = toDate;
+    isFilterActive = !!(fromDate || toDate);
+    
+    let filtered = allSalesData;
+    
+    if (fromDate) {
+        const parts = fromDate.split('-');
+        const from = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        from.setHours(0, 0, 0, 0);
+        
+        filtered = filtered.filter(sale => {
+            const saleDate = getSaleDate(sale);
+            return saleDate >= from;
+        });
+    }
+    
+    if (toDate) {
+        const parts = toDate.split('-');
+        const to = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        to.setHours(23, 59, 59, 999);
+        
+        filtered = filtered.filter(sale => {
+            const saleDate = getSaleDate(sale);
+            return saleDate <= to;
+        });
+    }
+    
+    const totalVentas = filtered.reduce((sum, s) => sum + (s.total || s.totalPrice || 0), 0);
+    
+    const countEl = document.getElementById('filteredSalesCount');
+    if (countEl) {
+        countEl.textContent = filtered.length;
+    }
+    
+    const totalEl = document.getElementById('filteredSalesTotal');
+    if (totalEl) {
+        totalEl.textContent = `| Total: ${formatCurrency(totalVentas)}`;
+    }
+    
+    // Mostrar mensaje de filtro activo
+    const messageEl = document.getElementById('filterActiveMessage');
+    const messageTextEl = document.getElementById('filterMessageText');
+    
+    if (isFilterActive && messageEl) {
+        messageEl.style.display = 'block';
+        let message = '';
+        if (fromDate && toDate) {
+            message = `📅 Ventas del ${formatDateForFilter(fromDate)} al ${formatDateForFilter(toDate)}`;
+        } else if (fromDate) {
+            message = `📅 Ventas desde ${formatDateForFilter(fromDate)}`;
+        } else if (toDate) {
+            message = `📅 Ventas hasta ${formatDateForFilter(toDate)}`;
+        }
+        
+        // ✅ Agregar información si no hay ventas
+        if (filtered.length === 0) {
+            message += ` ❌ No hay ventas en este período. Prueba con otras fechas.`;
+        }
+        
+        if (messageTextEl) {
+            messageTextEl.textContent = `${message} (${filtered.length} ventas, ${formatCurrency(totalVentas)})`;
+        }
+    } else if (messageEl) {
+        messageEl.style.display = 'none';
+    }
+    
+    // ✅ Actualizar window.allSalesData con los datos filtrados
+    window.allSalesData = filtered;
+    
+    renderSales(filtered);
+    updateSalesSummary(filtered);
+    
+    return filtered;
+};
+
+/**
+ * Limpia el filtro de fechas
+ */
+export const clearSalesFilter = () => {
+    currentSalesFilter = { from: null, to: null };
+    isFilterActive = false;
+    
+    const fromInput = document.getElementById('filterSalesFrom');
+    const toInput = document.getElementById('filterSalesTo');
+    if (fromInput) fromInput.value = '';
+    if (toInput) toInput.value = '';
+    
+    const messageEl = document.getElementById('filterActiveMessage');
+    if (messageEl) {
+        messageEl.style.display = 'none';
+    }
+    
+    const countEl = document.getElementById('filteredSalesCount');
+    if (countEl) {
+        countEl.textContent = allSalesData.length;
+    }
+    
+    const totalEl = document.getElementById('filteredSalesTotal');
+    if (totalEl) {
+        const total = allSalesData.reduce((sum, s) => sum + (s.total || s.totalPrice || 0), 0);
+        totalEl.textContent = `| Total: ${formatCurrency(total)}`;
+    }
+    
+    // ✅ Restaurar window.allSalesData
+    window.allSalesData = allSalesData;
+    
+    renderSales(allSalesData);
+    updateSalesSummary(allSalesData);
+};
+
+/**
+ * Filtra ventas de la semana actual
+ */
+export const filterThisWeek = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    
+    const monday = new Date(today);
+    monday.setDate(diff);
+    monday.setHours(0, 0, 0, 0);
+    
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    
+    const fromStr = formatDateInput(monday);
+    const toStr = formatDateInput(sunday);
+    
+    const fromInput = document.getElementById('filterSalesFrom');
+    const toInput = document.getElementById('filterSalesTo');
+    
+    if (fromInput) fromInput.value = fromStr;
+    if (toInput) toInput.value = toStr;
+    
+    filterSalesByDate(fromStr, toStr);
+    
+    showNotification(`📅 Mostrando ventas de la semana (${formatDateForFilter(fromStr)} - ${formatDateForFilter(toStr)})`, 'info');
+};
+
+/**
+ * Filtra ventas del mes actual
+ */
+export const filterThisMonth = () => {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    const fromStr = formatDateInput(firstDay);
+    const toStr = formatDateInput(lastDay);
+    
+    const fromInput = document.getElementById('filterSalesFrom');
+    const toInput = document.getElementById('filterSalesTo');
+    
+    if (fromInput) fromInput.value = fromStr;
+    if (toInput) toInput.value = toStr;
+    
+    filterSalesByDate(fromStr, toStr);
+    
+    showNotification(`📅 Mostrando ventas del mes de ${today.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}`, 'info');
+};
+
+// ============================================
+// CARGAR VENTAS (CON DIAGNÓSTICO Y ACTUALIZACIÓN DE window)
+// ============================================
+
+export const loadSales = async () => {
+    try {
+        const sales = await getSales();
+        allSalesData = sales || [];
+        
+        // ✅ ACTUALIZAR window.allSalesData
+        window.allSalesData = allSalesData;
+        
+        console.log('📊 Ventas cargadas:', allSalesData.length);
+        
+        // ✅ DIAGNÓSTICO: Ver las primeras fechas
+        if (allSalesData.length > 0) {
+            console.log('📅 Ejemplo de fecha de la primera venta:');
+            const primera = allSalesData[0];
+            console.log('  createdAt:', primera.createdAt);
+            console.log('  saleDate:', primera.saleDate);
+            const fechaParseada = getSaleDate(primera);
+            console.log('  Fecha parseada:', fechaParseada?.toLocaleDateString('es-MX'));
+            console.log('  Fecha completa:', fechaParseada);
+        }
+        
+        const countEl = document.getElementById('filteredSalesCount');
+        if (countEl) {
+            countEl.textContent = allSalesData.length;
+        }
+        
+        const totalEl = document.getElementById('filteredSalesTotal');
+        if (totalEl) {
+            const total = allSalesData.reduce((sum, s) => sum + (s.total || s.totalPrice || 0), 0);
+            totalEl.textContent = `| Total: ${formatCurrency(total)}`;
+        }
+        
+        renderSales(allSalesData);
+        updateSalesSummary(allSalesData);
+        
+        // ✅ Asegurar que window.allSalesData esté actualizado después de renderizar
+        window.allSalesData = allSalesData;
+        
+        console.log('✅ Ventas renderizadas correctamente. Total:', allSalesData.length);
+        console.log('✅ window.allSalesData actualizado:', window.allSalesData?.length);
+        
+    } catch (error) {
+        console.error('Error al cargar ventas:', error);
+    }
+};
+
+// ============================================
 // EXPORTAR FUNCIONES GLOBALES
 // ============================================
 
 export const setCurrentUser = (user) => {
     currentUser = user;
 };
+
+// ============================================
+// FUNCIÓN PARA OBTENER DATOS DE VENTAS (DIAGNÓSTICO)
+// ============================================
+
+export const getSalesData = () => allSalesData;
+
+// ============================================
+// REGISTRAR FUNCIONES DE FILTRO EN window
+// ============================================
+
+window.filterSalesByDate = filterSalesByDate;
+window.clearSalesFilter = clearSalesFilter;
+window.filterThisWeek = filterThisWeek;
+window.filterThisMonth = filterThisMonth;

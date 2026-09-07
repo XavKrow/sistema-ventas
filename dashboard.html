@@ -90,11 +90,9 @@
                 <div class="section-header">
                     <h2><i class="fas fa-box"></i> Gestión de Productos</h2>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <!-- ✅ PDF -->
                         <button onclick="window.printToPDF('productList', 'Lista de Productos')" class="btn btn-print">
                             <i class="fas fa-print"></i> PDF
                         </button>
-                        <!-- ✅ CSV -->
                         <button onclick="window.exportProductsToCSV()" class="btn btn-excel">
                             <i class="fas fa-file-csv"></i> CSV
                         </button>
@@ -116,6 +114,22 @@
                     </select>
                     <span class="search-results" id="productCount"><i class="fas fa-chart-bar"></i> Cargando...</span>
                 </div>
+
+                <!-- ✅ FILTROS RÁPIDOS DE STOCK EN PRODUCTOS -->
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0;">
+                    <button onclick="window.filterByStock('all')" class="btn btn-sm btn-secondary" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">
+                        <i class="fas fa-warehouse"></i> Todos
+                    </button>
+                    <button onclick="window.filterByStock('inStock')" class="btn btn-sm btn-success" style="background: #48bb78; color: #fff;">
+                        <i class="fas fa-check-circle"></i> En Stock
+                    </button>
+                    <button onclick="window.filterByStock('lowStock')" class="btn btn-sm btn-warning" style="background: #ed8936; color: #fff;">
+                        <i class="fas fa-exclamation-triangle"></i> Stock Bajo (&lt;5)
+                    </button>
+                    <button onclick="window.filterByStock('outOfStock')" class="btn btn-sm btn-danger" style="background: #f56565; color: #fff;">
+                        <i class="fas fa-times-circle"></i> Agotados
+                    </button>
+                </div>
                 
                 <div id="productList" class="table-container">
                     <div class="empty-state">
@@ -129,11 +143,9 @@
                 <div class="section-header">
                     <h2><i class="fas fa-clipboard-list"></i> Control de Inventario</h2>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <!-- ✅ PDF -->
                         <button onclick="window.printToPDF('inventoryList', 'Inventario')" class="btn btn-print">
                             <i class="fas fa-print"></i> PDF
                         </button>
-                        <!-- ✅ CSV -->
                         <button onclick="window.exportInventoryToCSV()" class="btn btn-excel">
                             <i class="fas fa-file-csv"></i> CSV
                         </button>
@@ -141,6 +153,25 @@
                             <i class="fas fa-sync"></i> Actualizar
                         </button>
                     </div>
+                </div>
+                
+                <!-- ✅ Resumen de Inventario -->
+                <div id="inventorySummary"></div>
+
+                <!-- ✅ FILTROS RÁPIDOS DE STOCK EN INVENTARIO -->
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0;">
+                    <button onclick="window.filterInventoryByStock('all')" class="btn btn-sm btn-secondary" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">
+                        <i class="fas fa-warehouse"></i> Todos
+                    </button>
+                    <button onclick="window.filterInventoryByStock('inStock')" class="btn btn-sm btn-success" style="background: #48bb78; color: #fff;">
+                        <i class="fas fa-check-circle"></i> En Stock
+                    </button>
+                    <button onclick="window.filterInventoryByStock('lowStock')" class="btn btn-sm btn-warning" style="background: #ed8936; color: #fff;">
+                        <i class="fas fa-exclamation-triangle"></i> Stock Bajo (&lt;5)
+                    </button>
+                    <button onclick="window.filterInventoryByStock('outOfStock')" class="btn btn-sm btn-danger" style="background: #f56565; color: #fff;">
+                        <i class="fas fa-times-circle"></i> Agotados
+                    </button>
                 </div>
                 
                 <div class="search-container">
@@ -167,11 +198,9 @@
                     <div class="section-header">
                         <h2><i class="fas fa-money-bill-wave"></i> Registrar Venta</h2>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <!-- ✅ PDF -->
                             <button onclick="window.printToPDF('salesList', 'Ventas')" class="btn btn-print">
                                 <i class="fas fa-print"></i> PDF
                             </button>
-                            <!-- ✅ CSV -->
                             <button onclick="window.exportSalesToCSV()" class="btn btn-excel">
                                 <i class="fas fa-file-csv"></i> CSV
                             </button>
@@ -226,6 +255,64 @@
                     </div>
                 </div>
 
+                <!-- ✅ FILTRO DE VENTAS POR FECHAS -->
+                <div class="sales-section" style="margin-top: 25px;">
+                    <div class="section-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Filtrar Ventas por Fechas</h2>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: end; padding: 20px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+                            <label><i class="fas fa-calendar-start" style="color: #48bb78;"></i> Desde</label>
+                            <input 
+                                type="date" 
+                                id="filterSalesFrom" 
+                                class="filter-date-input"
+                                style="width: 100%; padding: 10px 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-input); color: var(--text-primary);"
+                            />
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+                            <label><i class="fas fa-calendar-end" style="color: #f56565;"></i> Hasta</label>
+                            <input 
+                                type="date" 
+                                id="filterSalesTo" 
+                                class="filter-date-input"
+                                style="width: 100%; padding: 10px 12px; border: 2px solid var(--border-color); border-radius: 8px; background: var(--bg-input); color: var(--text-primary);"
+                            />
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button id="applySalesFilter" class="btn btn-primary" style="height: 42px;">
+                                <i class="fas fa-filter"></i> Aplicar Filtro
+                            </button>
+                            <button id="clearSalesFilter" class="btn btn-danger" style="height: 42px;">
+                                <i class="fas fa-undo"></i> Limpiar
+                            </button>
+                            <button id="filterThisWeek" class="btn" style="height: 42px; background: #667eea; color: #fff;">
+                                <i class="fas fa-calendar-week"></i> Esta Semana
+                            </button>
+                            <button id="filterThisMonth" class="btn" style="height: 42px; background: #9f7aea; color: #fff;">
+                                <i class="fas fa-calendar-month"></i> Este Mes
+                            </button>
+                        </div>
+                        
+                        <span style="color: var(--text-muted); font-size: 14px; display: flex; align-items: center; gap: 8px; padding: 8px 15px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color);">
+                            <i class="fas fa-chart-bar" style="color: #667eea;"></i>
+                            Ventas: <strong id="filteredSalesCount" style="color: var(--text-primary);">0</strong>
+                            <span id="filteredSalesTotal" style="color: #48bb78; margin-left: 5px;"></span>
+                        </span>
+                    </div>
+                    
+                    <div id="filterActiveMessage" style="display: none; margin-top: 10px; padding: 10px 15px; background: #ebf8ff; border-radius: 8px; border-left: 4px solid #667eea; color: #2b6cb0;">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="filterMessageText">Filtro aplicado</span>
+                        <button onclick="window.clearSalesFilter()" style="background: none; border: none; color: #f56565; cursor: pointer; float: right; font-weight: bold;">
+                            <i class="fas fa-times"></i> Cerrar
+                        </button>
+                    </div>
+                </div>
+
                 <div class="sales-section">
                     <h2><i class="fas fa-chart-pie"></i> Resumen de Ventas</h2>
                     <div id="salesSummary">
@@ -236,7 +323,7 @@
                 </div>
 
                 <div class="sales-section">
-                    <h2><i class="fas fa-history"></i> Últimas Ventas</h2>
+                    <h2><i class="fas fa-history"></i> Lista de Ventas</h2>
                     <div id="salesList" class="table-container">
                         <div class="empty-state">
                             <p><i class="fas fa-spinner fa-spin"></i> Cargando ventas...</p>
@@ -250,11 +337,9 @@
                 <div class="section-header">
                     <h2><i class="fas fa-coins"></i> Historial de Retiros</h2>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <!-- ✅ PDF -->
                         <button onclick="window.printToPDF('withdrawalsList', 'Historial de Retiros')" class="btn btn-print">
                             <i class="fas fa-print"></i> PDF
                         </button>
-                        <!-- ✅ CSV -->
                         <button onclick="window.exportFinancesToCSV()" class="btn btn-excel">
                             <i class="fas fa-file-csv"></i> CSV
                         </button>
@@ -320,7 +405,6 @@
                     </div>
                 </div>
 
-                <!-- TOP 5 PRODUCTOS MÁS VENDIDOS -->
                 <div class="chart-container" style="margin-top: 20px;">
                     <h3><i class="fas fa-trophy"></i> Top 5 Productos Más Vendidos</h3>
                     <canvas id="topProductsChart"></canvas>
@@ -332,7 +416,6 @@
                 <div class="section-header">
                     <h2><i class="fas fa-folder"></i> Gestión de Categorías</h2>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <!-- ✅ PDF -->
                         <button onclick="window.printToPDF('categoriesList', 'Categorías')" class="btn btn-print">
                             <i class="fas fa-print"></i> PDF
                         </button>
@@ -475,6 +558,7 @@
                 <div style="text-align: center; margin: 10px 0;">
                     <p id="inventoryProductName" style="font-size: 1.2em; font-weight: bold;"></p>
                     <p><i class="fas fa-warehouse"></i> Stock actual: <strong id="inventoryCurrentStock">0</strong> unidades</p>
+                    <div id="inventoryExtraInfo"></div>
                 </div>
                 
                 <div style="display: flex; gap: 15px; align-items: center; justify-content: center; margin: 20px 0;">
@@ -654,6 +738,24 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- ===== MODAL: HISTORIAL DE INVENTARIO ===== -->
+        <div id="historyModal" class="modal">
+            <div class="modal-content" style="max-width: 750px; max-height: 80vh; overflow-y: auto; display: flex; flex-direction: column;">
+                <span class="close-history" style="cursor: pointer; font-size: 24px; color: var(--text-muted); align-self: flex-end; position: sticky; top: 0; background: var(--bg-card); padding: 0 0 10px 0; z-index: 1;">
+                    <i class="fas fa-times"></i>
+                </span>
+                <h2 style="margin-top: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-history" style="color: #667eea;"></i>
+                    Historial de Movimientos
+                </h2>
+                <div id="historyContent" style="flex: 1; overflow-y: auto;">
+                    <p style="color: var(--text-muted); text-align: center; padding: 40px 0;">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando historial...
+                    </p>
+                </div>
             </div>
         </div>
 

@@ -18,7 +18,7 @@ import { formatCurrency, formatDate, showNotification } from './utils.js';
 let currentUser = null;
 
 // ============================================
-// RENDERIZAR RETIROS
+// RENDERIZAR RETIROS (CON ORDENAMIENTO)
 // ============================================
 
 export const renderWithdrawals = async () => {
@@ -37,6 +37,49 @@ export const renderWithdrawals = async () => {
             return;
         }
         
+        // ✅ ORDENAR RETIROS POR FECHA (más reciente primero)
+        const withdrawalsOrdenados = [...withdrawals].sort((a, b) => {
+            let fechaA = new Date(0);
+            let fechaB = new Date(0);
+            
+            // Obtener fecha de A
+            if (a.createdAt) {
+                if (typeof a.createdAt === 'object' && a.createdAt !== null && typeof a.createdAt.toDate === 'function') {
+                    fechaA = a.createdAt.toDate();
+                } else if (typeof a.createdAt === 'string') {
+                    fechaA = new Date(a.createdAt);
+                } else if (a.createdAt.seconds) {
+                    fechaA = new Date(a.createdAt.seconds * 1000);
+                }
+            } else if (a.date) {
+                if (typeof a.date === 'string') {
+                    fechaA = new Date(a.date);
+                } else if (typeof a.date === 'object' && a.date !== null && typeof a.date.toDate === 'function') {
+                    fechaA = a.date.toDate();
+                }
+            }
+            
+            // Obtener fecha de B
+            if (b.createdAt) {
+                if (typeof b.createdAt === 'object' && b.createdAt !== null && typeof b.createdAt.toDate === 'function') {
+                    fechaB = b.createdAt.toDate();
+                } else if (typeof b.createdAt === 'string') {
+                    fechaB = new Date(b.createdAt);
+                } else if (b.createdAt.seconds) {
+                    fechaB = new Date(b.createdAt.seconds * 1000);
+                }
+            } else if (b.date) {
+                if (typeof b.date === 'string') {
+                    fechaB = new Date(b.date);
+                } else if (typeof b.date === 'object' && b.date !== null && typeof b.date.toDate === 'function') {
+                    fechaB = b.date.toDate();
+                }
+            }
+            
+            // Orden descendente (más reciente primero)
+            return fechaB - fechaA;
+        });
+        
         let html = `
             <div class="table-responsive">
                 <table>
@@ -52,7 +95,7 @@ export const renderWithdrawals = async () => {
                     <tbody>
         `;
         
-        withdrawals.slice(0, 50).forEach(w => {
+        withdrawalsOrdenados.slice(0, 50).forEach(w => {
             const amount = typeof w.amount === 'string' ? parseFloat(w.amount) : Number(w.amount);
             
             let dateStr = 'Fecha desconocida';

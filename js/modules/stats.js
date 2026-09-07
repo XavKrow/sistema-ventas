@@ -16,6 +16,59 @@ let incomeExpenseChart = null;
 let topProductsChart = null;
 
 // ============================================
+// FUNCIÓN AUXILIAR: Obtener colores del tema
+// ============================================
+
+const getThemeColors = () => {
+    const root = document.documentElement;
+    const styles = getComputedStyle(root);
+    return {
+        textSecondary: styles.getPropertyValue('--text-secondary') || '#4a5568',
+        textMuted: styles.getPropertyValue('--text-muted') || '#a0aec0',
+        borderColor: styles.getPropertyValue('--border-color') || '#e2e8f0',
+        bgCard: styles.getPropertyValue('--bg-card') || '#ffffff',
+        primary: 'rgba(102, 126, 234, 0.6)',
+        primaryBorder: 'rgba(102, 126, 234, 1)',
+        success: 'rgba(72, 187, 120, 0.6)',
+        successBorder: '#48bb78',
+        danger: 'rgba(245, 101, 101, 0.6)',
+        dangerBorder: '#f56565',
+        warning: 'rgba(237, 137, 54, 0.6)',
+        warningBorder: '#ed8936'
+    };
+};
+
+// ============================================
+// FUNCIÓN AUXILIAR: Mostrar estado vacío
+// ============================================
+
+const showEmptyChart = (canvasId, icon, title, subtitle, extraText = '') => {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    
+    const parent = canvas.parentElement;
+    
+    // Destruir gráficas existentes de forma segura
+    try {
+        if (canvasId === 'salesChart' && salesChart) { salesChart.destroy(); salesChart = null; }
+        if (canvasId === 'categoryChart' && categoryChart) { categoryChart.destroy(); categoryChart = null; }
+        if (canvasId === 'incomeExpenseChart' && incomeExpenseChart) { incomeExpenseChart.destroy(); incomeExpenseChart = null; }
+        if (canvasId === 'topProductsChart' && topProductsChart) { topProductsChart.destroy(); topProductsChart = null; }
+    } catch (e) {
+        // Ignorar errores al destruir
+    }
+    
+    parent.innerHTML = `
+        <div class="chart-empty" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; height: 100%; min-height: 200px;">
+            <div style="font-size: 48px; color: var(--text-muted);">${icon}</div>
+            <div style="font-size: 16px; font-weight: 600; margin-top: 10px; color: var(--text-secondary);">${title}</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-top: 5px; text-align: center;">${subtitle}</div>
+            ${extraText ? `<div style="margin-top: 8px; font-size: 13px; color: var(--text-muted);">${extraText}</div>` : ''}
+        </div>
+    `;
+};
+
+// ============================================
 // ACTUALIZAR ESTADÍSTICAS
 // ============================================
 
@@ -56,32 +109,6 @@ export const updateStats = async () => {
 };
 
 // ============================================
-// FUNCIÓN AUXILIAR: Mostrar estado vacío
-// ============================================
-
-const showEmptyChart = (canvasId, icon, title, subtitle, extraText = '') => {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    
-    const parent = canvas.parentElement;
-    
-    // Destruir gráficas existentes
-    if (canvasId === 'salesChart' && salesChart) { salesChart.destroy(); salesChart = null; }
-    if (canvasId === 'categoryChart' && categoryChart) { categoryChart.destroy(); categoryChart = null; }
-    if (canvasId === 'incomeExpenseChart' && incomeExpenseChart) { incomeExpenseChart.destroy(); incomeExpenseChart = null; }
-    if (canvasId === 'topProductsChart' && topProductsChart) { topProductsChart.destroy(); topProductsChart = null; }
-    
-    parent.innerHTML = `
-        <div class="chart-empty">
-            <div class="icon" style="font-size: 48px;">${icon}</div>
-            <div class="title" style="font-size: 16px; font-weight: 600; margin-top: 10px;">${title}</div>
-            <div class="subtitle" style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">${subtitle}</div>
-            ${extraText ? `<div style="margin-top: 8px; font-size: 13px; color: var(--text-muted);">${extraText}</div>` : ''}
-        </div>
-    `;
-};
-
-// ============================================
 // GRÁFICA: VENTAS POR DÍA
 // ============================================
 
@@ -89,22 +116,41 @@ const updateSalesChart = async (sales) => {
     const ctx = document.getElementById('salesChart');
     if (!ctx) return;
     
+    // Destruir gráfica existente
+    if (salesChart) {
+        try { salesChart.destroy(); } catch (e) {}
+        salesChart = null;
+    }
+    
     if (!sales || sales.length === 0) {
         showEmptyChart('salesChart', '<i class="fas fa-chart-bar" style="color: #a0aec0;"></i>', 'No hay ventas registradas', 'Registra tu primera venta para ver estadísticas');
         return;
     }
     
-    if (sales.length < 2) {
-        const total = sales.reduce((sum, s) => sum + (s.total || s.totalPrice || 0), 0);
-        showEmptyChart('salesChart', '<i class="fas fa-chart-line" style="color: #ed8936;"></i>', 'Se necesitan más ventas', 'Registra al menos 2 ventas para ver tendencias', `Total: ${formatCurrency(total)}`);
+    // ✅ Verificar si hay ventas con fechas válidas
+    const validSales = sales.filter(s => s.saleDate || s.createdAt);
+    if (validSales.length === 0) {
+        showEmptyChart('salesChart', '<i class="fas fa-clock" style="color: #ed8936;"></i>', 'Ventas sin fecha', 'Las ventas no tienen fecha asignada');
         return;
     }
     
     // Agrupar ventas por día
     const salesByDay = {};
-    sales.forEach(sale => {
-        const date = new Date(sale.saleDate || sale.createdAt?.toDate?.() || sale.createdAt);
-        if (!isNaN(date)) {
+    validSales.forEach(sale => {
+        let date = null;
+        if (sale.saleDate) {
+            date = new Date(sale.saleDate);
+        } else if (sale.createdAt) {
+            if (typeof sale.createdAt === 'object' && sale.createdAt !== null && typeof sale.createdAt.toDate === 'function') {
+                date = sale.createdAt.toDate();
+            } else if (typeof sale.createdAt === 'string') {
+                date = new Date(sale.createdAt);
+            } else if (sale.createdAt.seconds) {
+                date = new Date(sale.createdAt.seconds * 1000);
+            }
+        }
+        
+        if (date && !isNaN(date)) {
             const day = date.toLocaleDateString('es-MX');
             salesByDay[day] = (salesByDay[day] || 0) + (sale.total || sale.totalPrice || 0);
         }
@@ -114,7 +160,7 @@ const updateSalesChart = async (sales) => {
     const labels = sortedDays.length > 0 ? sortedDays : ['Sin datos'];
     const data = sortedDays.length > 0 ? sortedDays.map(day => salesByDay[day]) : [0];
     
-    if (salesChart) salesChart.destroy();
+    const colors = getThemeColors();
     
     try {
         salesChart = new Chart(ctx, {
@@ -124,8 +170,8 @@ const updateSalesChart = async (sales) => {
                 datasets: [{
                     label: 'Ventas por Día',
                     data: data,
-                    backgroundColor: 'rgba(102, 126, 234, 0.6)',
-                    borderColor: 'rgba(102, 126, 234, 1)',
+                    backgroundColor: colors.primary,
+                    borderColor: colors.primaryBorder,
                     borderWidth: 2,
                     borderRadius: 5
                 }]
@@ -136,27 +182,27 @@ const updateSalesChart = async (sales) => {
                 plugins: {
                     legend: {
                         labels: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            color: colors.textSecondary
                         }
                     }
                 },
                 scales: {
                     y: {
                         ticks: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted'),
+                            color: colors.textMuted,
                             callback: value => '$' + value.toFixed(0)
                         },
                         grid: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            color: colors.borderColor
                         }
                     },
                     x: {
                         ticks: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted'),
+                            color: colors.textMuted,
                             maxTicksLimit: 10
                         },
                         grid: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            color: colors.borderColor
                         }
                     }
                 }
@@ -164,6 +210,7 @@ const updateSalesChart = async (sales) => {
         });
     } catch (error) {
         console.error('Error al crear gráfica de ventas:', error);
+        showEmptyChart('salesChart', '<i class="fas fa-exclamation-triangle" style="color: #f56565;"></i>', 'Error al crear gráfica', 'Reintenta actualizando la página');
     }
 };
 
@@ -175,6 +222,12 @@ const updateCategoryChart = async (products) => {
     const ctx = document.getElementById('categoryChart');
     if (!ctx) return;
     
+    // Destruir gráfica existente
+    if (categoryChart) {
+        try { categoryChart.destroy(); } catch (e) {}
+        categoryChart = null;
+    }
+    
     if (!products || products.length === 0) {
         showEmptyChart('categoryChart', '<i class="fas fa-box" style="color: #a0aec0;"></i>', 'No hay productos registrados', 'Agrega productos para ver la distribución por categoría');
         return;
@@ -182,7 +235,7 @@ const updateCategoryChart = async (products) => {
     
     // Agrupar por categoría
     const categories = {};
-    const colors = {
+    const colorsMap = {
         'Pieza': 'rgba(72, 187, 120, 0.6)',
         'Lote': 'rgba(102, 126, 234, 0.6)',
         'Sin categoría': 'rgba(237, 137, 54, 0.6)'
@@ -195,14 +248,14 @@ const updateCategoryChart = async (products) => {
     
     const labels = Object.keys(categories);
     const data = Object.values(categories);
-    const backgroundColors = labels.map(label => colors[label] || 'rgba(102, 126, 234, 0.6)');
+    const backgroundColors = labels.map(label => colorsMap[label] || 'rgba(102, 126, 234, 0.6)');
     
     if (labels.length === 1 && labels[0] === 'Sin categoría') {
         showEmptyChart('categoryChart', '<i class="fas fa-tags" style="color: #ed8936;"></i>', 'Los productos no tienen categoría', 'Asigna categorías a tus productos para ver estadísticas', `Total: ${products.length} productos`);
         return;
     }
     
-    if (categoryChart) categoryChart.destroy();
+    const colors = getThemeColors();
     
     try {
         categoryChart = new Chart(ctx, {
@@ -212,7 +265,7 @@ const updateCategoryChart = async (products) => {
                 datasets: [{
                     data: data,
                     backgroundColor: backgroundColors,
-                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-card'),
+                    borderColor: colors.bgCard,
                     borderWidth: 2
                 }]
             },
@@ -223,7 +276,7 @@ const updateCategoryChart = async (products) => {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary'),
+                            color: colors.textSecondary,
                             padding: 15
                         }
                     }
@@ -232,6 +285,7 @@ const updateCategoryChart = async (products) => {
         });
     } catch (error) {
         console.error('Error al crear gráfica de categorías:', error);
+        showEmptyChart('categoryChart', '<i class="fas fa-exclamation-triangle" style="color: #f56565;"></i>', 'Error al crear gráfica', 'Reintenta actualizando la página');
     }
 };
 
@@ -243,12 +297,19 @@ const updateIncomeExpenseChart = async (sales) => {
     const ctx = document.getElementById('incomeExpenseChart');
     if (!ctx) return;
     
+    // Destruir gráfica existente
+    if (incomeExpenseChart) {
+        try { incomeExpenseChart.destroy(); } catch (e) {}
+        incomeExpenseChart = null;
+    }
+    
     if (!sales || sales.length === 0) {
         showEmptyChart('incomeExpenseChart', '<i class="fas fa-chart-area" style="color: #a0aec0;"></i>', 'No hay datos de ingresos', 'Registra ventas para ver la comparación de ingresos vs gastos');
         return;
     }
     
     try {
+        // ✅ Importar dinámicamente
         const { getCashWithdrawals } = await import('./finances.js');
         const withdrawals = await getCashWithdrawals() || [];
         
@@ -267,8 +328,19 @@ const updateIncomeExpenseChart = async (sales) => {
         
         // Procesar ventas (ingresos)
         sales.forEach(sale => {
-            const date = new Date(sale.saleDate || sale.createdAt?.toDate?.() || sale.createdAt);
-            if (!isNaN(date)) {
+            let date = null;
+            if (sale.saleDate) {
+                date = new Date(sale.saleDate);
+            } else if (sale.createdAt) {
+                if (typeof sale.createdAt === 'object' && sale.createdAt !== null && typeof sale.createdAt.toDate === 'function') {
+                    date = sale.createdAt.toDate();
+                } else if (typeof sale.createdAt === 'string') {
+                    date = new Date(sale.createdAt);
+                } else if (sale.createdAt.seconds) {
+                    date = new Date(sale.createdAt.seconds * 1000);
+                }
+            }
+            if (date && !isNaN(date)) {
                 const key = date.toLocaleDateString('es-MX', { month: 'short', year: 'numeric' });
                 if (months[key]) {
                     months[key].income += (sale.total || sale.totalPrice || 0);
@@ -278,8 +350,23 @@ const updateIncomeExpenseChart = async (sales) => {
         
         // Procesar retiros (gastos)
         withdrawals.forEach(withdrawal => {
-            const date = new Date(withdrawal.createdAt?.toDate?.() || withdrawal.date || withdrawal.createdAt);
-            if (!isNaN(date)) {
+            let date = null;
+            if (withdrawal.createdAt) {
+                if (typeof withdrawal.createdAt === 'object' && withdrawal.createdAt !== null && typeof withdrawal.createdAt.toDate === 'function') {
+                    date = withdrawal.createdAt.toDate();
+                } else if (typeof withdrawal.createdAt === 'string') {
+                    date = new Date(withdrawal.createdAt);
+                } else if (withdrawal.createdAt.seconds) {
+                    date = new Date(withdrawal.createdAt.seconds * 1000);
+                }
+            } else if (withdrawal.date) {
+                if (typeof withdrawal.date === 'string') {
+                    date = new Date(withdrawal.date);
+                } else if (typeof withdrawal.date === 'object' && withdrawal.date !== null && typeof withdrawal.date.toDate === 'function') {
+                    date = withdrawal.date.toDate();
+                }
+            }
+            if (date && !isNaN(date)) {
                 const key = date.toLocaleDateString('es-MX', { month: 'short', year: 'numeric' });
                 if (months[key]) {
                     months[key].expense += Number(withdrawal.amount) || 0;
@@ -299,7 +386,7 @@ const updateIncomeExpenseChart = async (sales) => {
             return;
         }
         
-        if (incomeExpenseChart) incomeExpenseChart.destroy();
+        const colors = getThemeColors();
         
         incomeExpenseChart = new Chart(ctx, {
             type: 'line',
@@ -309,7 +396,7 @@ const updateIncomeExpenseChart = async (sales) => {
                     {
                         label: '💰 Ingresos',
                         data: incomeData,
-                        borderColor: '#48bb78',
+                        borderColor: colors.successBorder,
                         backgroundColor: 'rgba(72, 187, 120, 0.1)',
                         fill: true,
                         tension: 0.3,
@@ -318,7 +405,7 @@ const updateIncomeExpenseChart = async (sales) => {
                     {
                         label: '💸 Gastos',
                         data: expenseData,
-                        borderColor: '#f56565',
+                        borderColor: colors.dangerBorder,
                         backgroundColor: 'rgba(245, 101, 101, 0.1)',
                         fill: true,
                         tension: 0.3,
@@ -332,26 +419,26 @@ const updateIncomeExpenseChart = async (sales) => {
                 plugins: {
                     legend: {
                         labels: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            color: colors.textSecondary
                         }
                     }
                 },
                 scales: {
                     y: {
                         ticks: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted'),
+                            color: colors.textMuted,
                             callback: value => '$' + value.toFixed(0)
                         },
                         grid: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            color: colors.borderColor
                         }
                     },
                     x: {
                         ticks: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted')
+                            color: colors.textMuted
                         },
                         grid: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            color: colors.borderColor
                         }
                     }
                 }
@@ -370,6 +457,12 @@ const updateIncomeExpenseChart = async (sales) => {
 const updateTopProductsChart = async (sales) => {
     const ctx = document.getElementById('topProductsChart');
     if (!ctx) return;
+    
+    // Destruir gráfica existente
+    if (topProductsChart) {
+        try { topProductsChart.destroy(); } catch (e) {}
+        topProductsChart = null;
+    }
     
     if (!sales || sales.length === 0) {
         showEmptyChart('topProductsChart', '<i class="fas fa-trophy" style="color: #a0aec0;"></i>', 'No hay ventas registradas', 'Registra ventas para ver los productos más vendidos');
@@ -398,6 +491,11 @@ const updateTopProductsChart = async (sales) => {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
     
+    if (sorted.length === 0) {
+        showEmptyChart('topProductsChart', '<i class="fas fa-box-open" style="color: #a0aec0;"></i>', 'No hay productos vendidos', 'Registra ventas para ver los productos más vendidos');
+        return;
+    }
+    
     const labels = sorted.map(item => item[0]);
     const data = sorted.map(item => item[1]);
     const colors = [
@@ -408,15 +506,7 @@ const updateTopProductsChart = async (sales) => {
         'rgba(159, 122, 234, 0.8)'
     ];
     
-    if (topProductsChart) {
-        topProductsChart.destroy();
-    }
-    
-    // Verificar si hay datos
-    if (sorted.length === 0) {
-        showEmptyChart('topProductsChart', '<i class="fas fa-box-open" style="color: #a0aec0;"></i>', 'No hay productos vendidos', 'Registra ventas para ver los productos más vendidos');
-        return;
-    }
+    const themeColors = getThemeColors();
     
     try {
         topProductsChart = new Chart(ctx, {
@@ -451,23 +541,23 @@ const updateTopProductsChart = async (sales) => {
                 scales: {
                     y: {
                         ticks: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')
+                            color: themeColors.textSecondary
                         },
                         grid: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            color: themeColors.borderColor
                         }
                     },
                     x: {
                         ticks: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted')
+                            color: themeColors.textMuted
                         },
                         grid: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            color: themeColors.borderColor
                         },
                         title: {
                             display: true,
                             text: 'Unidades Vendidas',
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-muted')
+                            color: themeColors.textMuted
                         }
                     }
                 }
@@ -475,5 +565,6 @@ const updateTopProductsChart = async (sales) => {
         });
     } catch (error) {
         console.error('Error al crear gráfica de top productos:', error);
+        showEmptyChart('topProductsChart', '<i class="fas fa-exclamation-triangle" style="color: #f56565;"></i>', 'Error al crear gráfica', 'Reintenta actualizando la página');
     }
 };

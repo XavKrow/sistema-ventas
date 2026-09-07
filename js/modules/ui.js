@@ -1,74 +1,95 @@
 // ============================================
-// CONFIGURACIÓN DE INTERFAZ
+// UI - TABS Y NAVEGACIÓN
 // ============================================
 
-import { getProducts, getSales } from '../firebase-config.js';
-import { renderProducts } from './products.js';
-import { renderInventory } from './inventory.js';
-import { renderSales, updateSalesSummary } from './sales.js';
-import { showNotification } from './utils.js';
+// ============================================
+// VARIABLES
+// ============================================
+
+const STORAGE_KEY = 'activeTab';
+
+// ============================================
+// CONFIGURAR TABS
+// ============================================
 
 export const setupTabs = () => {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Remover clase active de todos los tabs
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            
-            // Activar tab seleccionado
-            this.classList.add('active');
-            const tabId = this.dataset.tab;
-            const tabPanel = document.getElementById(tabId);
-            
-            if (tabPanel) {
-                tabPanel.classList.add('active');
-            }
-            
-            // Cargar datos según el tab seleccionado
-            if (tabId === 'products') {
-                getProducts().then(renderProducts).catch(error => {
-                    console.error('Error al cargar productos:', error);
-                    showNotification('❌ Error al cargar productos', 'error');
-                });
-            } else if (tabId === 'inventory') {
-                getProducts().then(renderInventory).catch(error => {
-                    console.error('Error al cargar inventario:', error);
-                    showNotification('❌ Error al cargar inventario', 'error');
-                });
-            } else if (tabId === 'sales') {
-                getSales().then(sales => {
-                    renderSales(sales);
-                    updateSalesSummary(sales);
-                }).catch(error => {
-                    console.error('Error al cargar ventas:', error);
-                    showNotification('❌ Error al cargar ventas', 'error');
-                });
-            } else if (tabId === 'finances') {
-                // El tab de finanzas se actualiza automáticamente
-                // desde updateFinancialPanel en finances.js
-            } else if (tabId === 'stats') {
-                // El tab de estadísticas se actualiza automáticamente
-                // desde updateStats en stats.js
-            } else if (tabId === 'categories') {
-                // El tab de categorías se actualiza automáticamente
-                // desde updateCategories en categories.js
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = {
+        products: document.getElementById('products'),
+        inventory: document.getElementById('inventory'),
+        sales: document.getElementById('sales'),
+        finances: document.getElementById('finances'),
+        stats: document.getElementById('stats'),
+        categories: document.getElementById('categories')
+    };
+    
+    // ✅ Obtener la pestaña guardada o usar 'products' por defecto
+    const savedTab = localStorage.getItem(STORAGE_KEY) || 'products';
+    
+    // ✅ Activar la pestaña guardada
+    activateTab(savedTab, tabs, panels);
+    
+    // Event listeners para cada tab
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            if (tabName) {
+                activateTab(tabName, tabs, panels);
+                // ✅ Guardar la pestaña activa en localStorage
+                localStorage.setItem(STORAGE_KEY, tabName);
             }
         });
     });
+};
+
+// ============================================
+// ACTIVAR PESTAÑA
+// ============================================
+
+const activateTab = (tabName, tabs, panels) => {
+    // Desactivar todas las pestañas y paneles
+    tabs.forEach(t => t.classList.remove('active'));
+    Object.values(panels).forEach(p => {
+        if (p) p.classList.remove('active');
+    });
     
-    // ✅ Cargar datos del tab activo al iniciar
-    const activeTab = document.querySelector('.tab-btn.active');
+    // Activar la pestaña seleccionada
+    const activeTab = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
     if (activeTab) {
-        const tabId = activeTab.dataset.tab;
-        if (tabId === 'products') {
-            getProducts().then(renderProducts);
-        } else if (tabId === 'inventory') {
-            getProducts().then(renderInventory);
-        } else if (tabId === 'sales') {
-            getSales().then(sales => {
-                renderSales(sales);
-                updateSalesSummary(sales);
-            });
-        }
+        activeTab.classList.add('active');
     }
+    
+    // Activar el panel correspondiente
+    if (panels[tabName]) {
+        panels[tabName].classList.add('active');
+    }
+};
+
+// ============================================
+// CAMBIAR A UNA PESTAÑA ESPECÍFICA (EXPORTAR)
+// ============================================
+
+export const switchTab = (tabName) => {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = {
+        products: document.getElementById('products'),
+        inventory: document.getElementById('inventory'),
+        sales: document.getElementById('sales'),
+        finances: document.getElementById('finances'),
+        stats: document.getElementById('stats'),
+        categories: document.getElementById('categories')
+    };
+    
+    if (panels[tabName]) {
+        activateTab(tabName, tabs, panels);
+        localStorage.setItem(STORAGE_KEY, tabName);
+    }
+};
+
+// ============================================
+// OBTENER PESTAÑA ACTIVA (EXPORTAR)
+// ============================================
+
+export const getActiveTab = () => {
+    return localStorage.getItem(STORAGE_KEY) || 'products';
 };

@@ -52,7 +52,7 @@ const COLLECTIONS = {
     sales: 'sales',
     inventoryMovements: 'inventoryMovements',
     cashWithdrawals: 'cashWithdrawals',
-    categories: 'categories'  // ✅ AGREGADO
+    categories: 'categories'
 };
 
 // ============================================
@@ -316,7 +316,8 @@ async function saveInventoryMovement(movement) {
             quantity: Number(movement.quantity) || 0,
             operation: String(movement.operation || 'add'),
             timestamp: movement.timestamp || new Date().toISOString(),
-            user: String(movement.user || 'Sistema')
+            user: String(movement.user || 'Sistema'),
+            note: String(movement.note || '')
         };
 
         const docRef = await addDoc(collection(db, COLLECTIONS.inventoryMovements), {
@@ -327,6 +328,41 @@ async function saveInventoryMovement(movement) {
     } catch (error) {
         console.error('Error al guardar movimiento de inventario:', error);
         throw error;
+    }
+}
+
+// ✅ Obtener todos los movimientos de inventario
+async function getInventoryMovements() {
+    try {
+        const querySnapshot = await getDocs(collection(db, COLLECTIONS.inventoryMovements));
+        const movements = [];
+        querySnapshot.forEach((doc) => {
+            movements.push({ id: doc.id, ...doc.data() });
+        });
+        return movements;
+    } catch (error) {
+        console.error('Error al obtener movimientos de inventario:', error);
+        return [];
+    }
+}
+
+// ✅ Obtener movimientos de un producto específico
+async function getInventoryMovementsByProduct(productId) {
+    try {
+        const q = query(
+            collection(db, COLLECTIONS.inventoryMovements),
+            where('productId', '==', productId),
+            orderBy('createdAt', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        const movements = [];
+        querySnapshot.forEach((doc) => {
+            movements.push({ id: doc.id, ...doc.data() });
+        });
+        return movements;
+    } catch (error) {
+        console.error('Error al obtener movimientos del producto:', error);
+        return [];
     }
 }
 
@@ -510,6 +546,8 @@ export {
     undoSale,
     listenSales,
     saveInventoryMovement,
+    getInventoryMovements,
+    getInventoryMovementsByProduct,
     saveCashWithdrawal,
     getCashWithdrawals,
     deleteCashWithdrawal,
