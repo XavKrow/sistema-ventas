@@ -249,6 +249,7 @@ async function saveMultiSale(saleData) {
 
 /**
  * Deshacer una venta (revertir stock y eliminar venta)
+ * ✅ CORREGIDO: usa operation: 'undo_sale' en lugar de 'add'
  */
 async function undoSale(saleId) {
     try {
@@ -272,13 +273,15 @@ async function undoSale(saleId) {
                     updatedAt: serverTimestamp()
                 });
                 
+                // ✅ Cambiado de 'add' a 'undo_sale'
                 await saveInventoryMovement({
                     productId: item.productId,
                     productName: item.productName,
                     quantity: item.quantity,
                     operation: 'undo_sale',
                     timestamp: new Date().toISOString(),
-                    user: 'Sistema (Deshacer venta)'
+                    user: 'Sistema (Deshacer venta)',
+                    note: `Venta deshecha (${saleId})`
                 });
             }
         }
