@@ -510,73 +510,21 @@ export const confirmMultiSale = async () => {
 };
 
 // ============================================
-// DESHACER VENTA (CON RESTAURACIÓN DE STOCK - CORREGIDO)
+// DESHACER VENTA (CORREGIDO - SIN DUPLICACIÓN)
 // ============================================
 
 export const undoSaleHandler = async (saleId) => {
     if (!confirm('¿Estás seguro de deshacer esta venta?\nSe devolverá el stock de todos los productos.')) return;
     
     try {
-        // 1. Obtener la venta que se va a deshacer
-        const sales = await getSales();
-        const sale = sales.find(s => s.id === saleId);
-        
-        if (!sale) {
-            showNotification('❌ Venta no encontrada', 'error');
-            return;
-        }
-        
-        // 2. Obtener todos los productos
-        const products = await getProducts();
-        
-        // 3. ✅ RESTAURAR STOCK para cada producto en la venta
-        if (sale.items && Array.isArray(sale.items)) {
-            // Venta múltiple
-            for (const item of sale.items) {
-                const product = products.find(p => p.id === item.productId);
-                if (product) {
-                    product.stock = (product.stock || 0) + item.quantity;
-                    await saveProduct(product, product.id);
-                    
-                    // ❌ MOVIMIENTO ELIMINADO - Ya lo maneja undoSale en firebase-config
-                    // await saveInventoryMovement({
-                    //     productId: product.id,
-                    //     productName: product.name,
-                    //     quantity: item.quantity,
-                    //     operation: 'add',
-                    //     timestamp: new Date().toISOString(),
-                    //     user: currentUser?.email || 'Sistema',
-                    //     note: `Deshacer venta (${saleId})`
-                    // });
-                }
-            }
-        } else if (sale.productId) {
-            // Venta simple
-            const product = products.find(p => p.id === sale.productId);
-            if (product) {
-                product.stock = (product.stock || 0) + (sale.quantity || 0);
-                await saveProduct(product, product.id);
-                
-                // ❌ MOVIMIENTO ELIMINADO - Ya lo maneja undoSale en firebase-config
-                // await saveInventoryMovement({
-                //     productId: product.id,
-                //     productName: product.name,
-                //     quantity: sale.quantity || 0,
-                //     operation: 'add',
-                //     timestamp: new Date().toISOString(),
-                //     user: currentUser?.email || 'Sistema',
-                //     note: `Deshacer venta (${saleId})`
-                // });
-            }
-        }
-        
-        // 4. Eliminar la venta de la base de datos (esto también restaura el stock y registra el movimiento)
+        // ✅ undoSale maneja TODO: restaurar stock + eliminar venta + registrar movimiento
+        // Esto funciona tanto para ventas simples como múltiples
         await undoSale(saleId);
         
-        // 5. Actualizar la interfaz
+        // Actualizar la interfaz
         await updateFinancialPanel();
         
-        // 6. Recargar productos y ventas
+        // Recargar productos para mostrar el stock actualizado
         const updatedProducts = await getProducts();
         if (window.renderProducts) {
             window.renderProducts(updatedProducts);
@@ -585,7 +533,7 @@ export const undoSaleHandler = async (saleId) => {
             window.renderInventory(updatedProducts);
         }
         
-        // 7. Recargar ventas
+        // Recargar ventas
         await loadSales();
         
         showNotification('✅ Venta deshecha y stock restaurado correctamente', 'success');

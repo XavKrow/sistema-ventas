@@ -249,7 +249,7 @@ async function saveMultiSale(saleData) {
 
 /**
  * Deshacer una venta (revertir stock y eliminar venta)
- * ✅ CORREGIDO: usa operation: 'undo_sale' en lugar de 'add'
+ * ✅ CORREGIDO: Maneja tanto ventas simples como múltiples
  */
 async function undoSale(saleId) {
     try {
@@ -260,7 +260,22 @@ async function undoSale(saleId) {
         
         const sale = { id: saleDoc.id, ...saleDoc.data() };
         
-        for (const item of sale.items || []) {
+        // ✅ Obtener los items de la venta
+        let items = sale.items || [];
+        
+        // ✅ Si es venta simple (no tiene items), crear un item temporal
+        if (items.length === 0 && sale.productId) {
+            items = [{
+                productId: sale.productId,
+                productName: sale.productName || 'Producto',
+                quantity: sale.quantity || 0
+            }];
+        }
+        
+        // ✅ Restaurar stock para cada producto
+        for (const item of items) {
+            if (!item.productId || !item.quantity) continue;
+            
             const productRef = doc(db, COLLECTIONS.products, item.productId);
             const productDoc = await getDoc(productRef);
             
@@ -273,10 +288,10 @@ async function undoSale(saleId) {
                     updatedAt: serverTimestamp()
                 });
                 
-                // ✅ Cambiado de 'add' a 'undo_sale'
+                // ✅ Registrar movimiento con 'undo_sale'
                 await saveInventoryMovement({
                     productId: item.productId,
-                    productName: item.productName,
+                    productName: item.productName || product.name || 'Producto',
                     quantity: item.quantity,
                     operation: 'undo_sale',
                     timestamp: new Date().toISOString(),
@@ -286,6 +301,7 @@ async function undoSale(saleId) {
             }
         }
         
+        // ✅ Eliminar la venta
         await deleteDoc(doc(db, COLLECTIONS.sales, saleId));
         return { success: true, sale: sale };
     } catch (error) {

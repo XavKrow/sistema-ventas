@@ -39,6 +39,41 @@ const getThemeColors = () => {
 };
 
 // ============================================
+// FUNCIÓN AUXILIAR: Reiniciar canvas
+// ============================================
+
+const resetCanvas = (canvasId) => {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    
+    // Destruir gráfica asociada
+    if (canvasId === 'salesChart' && salesChart) {
+        try { salesChart.destroy(); } catch (e) {}
+        salesChart = null;
+    }
+    if (canvasId === 'categoryChart' && categoryChart) {
+        try { categoryChart.destroy(); } catch (e) {}
+        categoryChart = null;
+    }
+    if (canvasId === 'incomeExpenseChart' && incomeExpenseChart) {
+        try { incomeExpenseChart.destroy(); } catch (e) {}
+        incomeExpenseChart = null;
+    }
+    if (canvasId === 'topProductsChart' && topProductsChart) {
+        try { topProductsChart.destroy(); } catch (e) {}
+        topProductsChart = null;
+    }
+    
+    // Clonar y reemplazar el canvas para limpiarlo completamente
+    const parent = canvas.parentElement;
+    const newCanvas = canvas.cloneNode();
+    newCanvas.id = canvas.id;
+    parent.replaceChild(newCanvas, canvas);
+    
+    return document.getElementById(canvasId);
+};
+
+// ============================================
 // FUNCIÓN AUXILIAR: Mostrar estado vacío
 // ============================================
 
@@ -113,14 +148,8 @@ export const updateStats = async () => {
 // ============================================
 
 const updateSalesChart = async (sales) => {
-    const ctx = document.getElementById('salesChart');
-    if (!ctx) return;
-    
-    // Destruir gráfica existente
-    if (salesChart) {
-        try { salesChart.destroy(); } catch (e) {}
-        salesChart = null;
-    }
+    const canvas = resetCanvas('salesChart');
+    if (!canvas) return;
     
     if (!sales || sales.length === 0) {
         showEmptyChart('salesChart', '<i class="fas fa-chart-bar" style="color: #a0aec0;"></i>', 'No hay ventas registradas', 'Registra tu primera venta para ver estadísticas');
@@ -163,7 +192,7 @@ const updateSalesChart = async (sales) => {
     const colors = getThemeColors();
     
     try {
-        salesChart = new Chart(ctx, {
+        salesChart = new Chart(canvas, {
             type: 'bar',
             data: {
                 labels: labels,
@@ -219,14 +248,8 @@ const updateSalesChart = async (sales) => {
 // ============================================
 
 const updateCategoryChart = async (products) => {
-    const ctx = document.getElementById('categoryChart');
-    if (!ctx) return;
-    
-    // Destruir gráfica existente
-    if (categoryChart) {
-        try { categoryChart.destroy(); } catch (e) {}
-        categoryChart = null;
-    }
+    const canvas = resetCanvas('categoryChart');
+    if (!canvas) return;
     
     if (!products || products.length === 0) {
         showEmptyChart('categoryChart', '<i class="fas fa-box" style="color: #a0aec0;"></i>', 'No hay productos registrados', 'Agrega productos para ver la distribución por categoría');
@@ -258,7 +281,7 @@ const updateCategoryChart = async (products) => {
     const colors = getThemeColors();
     
     try {
-        categoryChart = new Chart(ctx, {
+        categoryChart = new Chart(canvas, {
             type: 'doughnut',
             data: {
                 labels: labels,
@@ -290,18 +313,12 @@ const updateCategoryChart = async (products) => {
 };
 
 // ============================================
-// GRÁFICA: INGRESOS VS RETIROS
+// GRÁFICA: INGRESOS VS RETIROS (CORREGIDA)
 // ============================================
 
 const updateIncomeExpenseChart = async (sales) => {
-    const ctx = document.getElementById('incomeExpenseChart');
-    if (!ctx) return;
-    
-    // Destruir gráfica existente
-    if (incomeExpenseChart) {
-        try { incomeExpenseChart.destroy(); } catch (e) {}
-        incomeExpenseChart = null;
-    }
+    const canvas = resetCanvas('incomeExpenseChart');
+    if (!canvas) return;
     
     if (!sales || sales.length === 0) {
         showEmptyChart('incomeExpenseChart', '<i class="fas fa-chart-area" style="color: #a0aec0;"></i>', 'No hay datos de ingresos', 'Registra ventas para ver la comparación de ingresos vs gastos');
@@ -388,7 +405,7 @@ const updateIncomeExpenseChart = async (sales) => {
         
         const colors = getThemeColors();
         
-        incomeExpenseChart = new Chart(ctx, {
+        incomeExpenseChart = new Chart(canvas, {
             type: 'line',
             data: {
                 labels: labels,
@@ -455,14 +472,8 @@ const updateIncomeExpenseChart = async (sales) => {
 // ============================================
 
 const updateTopProductsChart = async (sales) => {
-    const ctx = document.getElementById('topProductsChart');
-    if (!ctx) return;
-    
-    // Destruir gráfica existente
-    if (topProductsChart) {
-        try { topProductsChart.destroy(); } catch (e) {}
-        topProductsChart = null;
-    }
+    const canvas = resetCanvas('topProductsChart');
+    if (!canvas) return;
     
     if (!sales || sales.length === 0) {
         showEmptyChart('topProductsChart', '<i class="fas fa-trophy" style="color: #a0aec0;"></i>', 'No hay ventas registradas', 'Registra ventas para ver los productos más vendidos');
@@ -509,7 +520,7 @@ const updateTopProductsChart = async (sales) => {
     const themeColors = getThemeColors();
     
     try {
-        topProductsChart = new Chart(ctx, {
+        topProductsChart = new Chart(canvas, {
             type: 'bar',
             data: {
                 labels: labels,
