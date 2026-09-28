@@ -289,6 +289,10 @@ export const loadProductPrice = async () => {
     }
 };
 
+// ============================================
+// ACTUALIZAR SELECT DE PRODUCTOS (VENTA SIMPLE - ORDENADO)
+// ============================================
+
 export const updateSaleProducts = async (products) => {
     const select = document.getElementById('saleProduct');
     if (!select) return;
@@ -302,7 +306,12 @@ export const updateSaleProducts = async (products) => {
         return;
     }
     
-    products.forEach(product => {
+    // ✅ ORDENAR PRODUCTOS ALFABÉTICAMENTE
+    const sortedProducts = [...products].sort((a, b) => 
+        a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+    );
+    
+    sortedProducts.forEach(product => {
         const stock = product.stock || 0;
         const option = document.createElement('option');
         option.value = product.id;
@@ -335,7 +344,13 @@ const populateMultiSaleProducts = async () => {
     const products = await getProducts();
     
     select.innerHTML = '<option value=""><i class="fas fa-search"></i> Seleccionar producto...</option>';
-    products.forEach(product => {
+    
+    // ✅ ORDENAR PRODUCTOS ALFABÉTICAMENTE
+    const sortedProducts = [...products].sort((a, b) => 
+        a.name.localeCompare(b.name, 'es', { sensitivity: 'base' })
+    );
+    
+    sortedProducts.forEach(product => {
         const stock = product.stock || 0;
         if (stock > 0) {
             const option = document.createElement('option');
